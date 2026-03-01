@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
+import MonthFilter from "@/components/MonthFilter";
 import { membros as initialMembros, meses, formatCurrency, Membro, PagamentoMensalidade } from "@/data/financialData";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ const Mensalidades = () => {
   const [membrosData, setMembrosData] = useState<Membro[]>(initialMembros);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
+  const [mesSelecionado, setMesSelecionado] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pagamentoDialog, setPagamentoDialog] = useState(false);
   const [extratoDialog, setExtratoDialog] = useState(false);
@@ -23,19 +25,15 @@ const Mensalidades = () => {
   const [pagForm, setPagForm] = useState({ mes: "JAN", valor: "", data: "" });
   const { toast } = useToast();
 
-  const filteredMembros = membrosData.filter((m) => {
-    const matchSearch = m.nome.toLowerCase().includes(search.toLowerCase());
-    if (filterStatus === "todos") return matchSearch;
-    const totalPago = m.pagamentos.reduce((s, p) => s + p.valor, 0);
-    if (filterStatus === "em-dia") return matchSearch && totalPago > 0;
-    if (filterStatus === "inadimplente") return matchSearch && totalPago === 0;
-    return matchSearch;
-  });
+  const mesesVisiveis = mesSelecionado === "TODOS" ? meses.slice(0, 2) : [mesSelecionado];
 
   const getStatus = (m: Membro) => {
-    const totalPago = m.pagamentos.reduce((s, p) => s + p.valor, 0);
-    const mesesPassados = 2; // JAN + FEV
-    const totalDevido = mesesPassados * m.mensalidadeValor + (m.saldoAnterior > 0 ? m.saldoAnterior : 0);
+    const pagsFiltrados = mesSelecionado === "TODOS"
+      ? m.pagamentos
+      : m.pagamentos.filter(p => p.mes === mesSelecionado);
+    const totalPago = pagsFiltrados.reduce((s, p) => s + p.valor, 0);
+    const mesesAtivos = mesSelecionado === "TODOS" ? 2 : 1;
+    const totalDevido = mesesAtivos * m.mensalidadeValor + (m.saldoAnterior > 0 ? m.saldoAnterior : 0);
     const credito = m.saldoAnterior < 0 ? Math.abs(m.saldoAnterior) : 0;
     const saldo = totalDevido - totalPago - credito;
     if (saldo <= 0) return { label: "Em dia", class: "bg-success/10 text-success" };
@@ -44,12 +42,24 @@ const Mensalidades = () => {
   };
 
   const getSaldoMembro = (m: Membro) => {
-    const totalPago = m.pagamentos.reduce((s, p) => s + p.valor, 0);
-    const mesesPassados = 2;
-    const totalDevido = mesesPassados * m.mensalidadeValor + (m.saldoAnterior > 0 ? m.saldoAnterior : 0);
+    const pagsFiltrados = mesSelecionado === "TODOS"
+      ? m.pagamentos
+      : m.pagamentos.filter(p => p.mes === mesSelecionado);
+    const totalPago = pagsFiltrados.reduce((s, p) => s + p.valor, 0);
+    const mesesAtivos = mesSelecionado === "TODOS" ? 2 : 1;
+    const totalDevido = mesesAtivos * m.mensalidadeValor + (m.saldoAnterior > 0 ? m.saldoAnterior : 0);
     const credito = m.saldoAnterior < 0 ? Math.abs(m.saldoAnterior) : 0;
     return totalDevido - totalPago - credito;
   };
+
+  const filteredMembros = membrosData.filter((m) => {
+    const matchSearch = m.nome.toLowerCase().includes(search.toLowerCase());
+    if (filterStatus === "todos") return matchSearch;
+    const status = getStatus(m);
+    if (filterStatus === "em-dia") return matchSearch && status.label === "Em dia";
+    if (filterStatus === "inadimplente") return matchSearch && status.label === "Inadimplente";
+    return matchSearch;
+  });
 
   const handleSave = () => {
     if (!formData.nome.trim()) return;
@@ -104,9 +114,11 @@ const Mensalidades = () => {
     toast({ title: `Extrato enviado para ${m.nome} via WhatsApp`, description: "Funcionalidade disponível com backend integrado." });
   };
 
+  const subtitleMes = mesSelecionado === "TODOS" ? "2026" : `${mesSelecionado}/2026`;
+
   return (
     <div>
-      <PageHeader title="Controle de Mensalidades" subtitle="Gestão de pagamentos dos associados — 2026">
+      <PageHeader title="Controle de Mensalidades" subtitle={`Gestão de pagamentos dos associados — ${subtitleMes}`}>
         <Button onClick={() => { setEditingMembro(null); setFormData({ nome: "", mensalidadeValor: "30", saldoAnterior: "0" }); setDialogOpen(true); }}
           className="bg-gradient-gold text-primary-foreground hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Novo Associado
@@ -120,6 +132,7 @@ const Mensalidades = () => {
           <Input placeholder="Buscar associado..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-card border-border" />
         </div>
+        <MonthFilter value={mesSelecionado} onChange={setMesSelecionado} />
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-44 bg-card border-border">
             <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
@@ -142,7 +155,7 @@ const Mensalidades = () => {
                 <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Nº</th>
                 <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Nome</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Valor</th>
-                {meses.slice(0, 2).map(m => (
+                {mesesVisiveis.map(m => (
                   <th key={m} className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">{m}</th>
                 ))}
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Saldo</th>
@@ -154,19 +167,19 @@ const Mensalidades = () => {
               {filteredMembros.map((m) => {
                 const status = getStatus(m);
                 const saldo = getSaldoMembro(m);
-                const pagJan = m.pagamentos.filter(p => p.mes === 'JAN').reduce((s, p) => s + p.valor, 0);
-                const pagFev = m.pagamentos.filter(p => p.mes === 'FEV').reduce((s, p) => s + p.valor, 0);
                 return (
                   <tr key={m.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                     <td className="px-5 py-3 text-xs font-mono text-muted-foreground">{m.numero}</td>
                     <td className="px-5 py-3 text-sm font-medium text-card-foreground">{m.nome}</td>
                     <td className="px-3 py-3 text-center text-xs font-mono text-card-foreground">{formatCurrency(m.mensalidadeValor)}</td>
-                    <td className={cn("px-3 py-3 text-center text-xs font-mono", pagJan > 0 ? "text-success" : "text-muted-foreground")}>
-                      {pagJan > 0 ? formatCurrency(pagJan) : "—"}
-                    </td>
-                    <td className={cn("px-3 py-3 text-center text-xs font-mono", pagFev > 0 ? "text-success" : "text-muted-foreground")}>
-                      {pagFev > 0 ? formatCurrency(pagFev) : "—"}
-                    </td>
+                    {mesesVisiveis.map(mes => {
+                      const pagMes = m.pagamentos.filter(p => p.mes === mes).reduce((s, p) => s + p.valor, 0);
+                      return (
+                        <td key={mes} className={cn("px-3 py-3 text-center text-xs font-mono", pagMes > 0 ? "text-success" : "text-muted-foreground")}>
+                          {pagMes > 0 ? formatCurrency(pagMes) : "—"}
+                        </td>
+                      );
+                    })}
                     <td className={cn("px-3 py-3 text-center text-xs font-mono font-medium", saldo > 0 ? "text-destructive" : "text-success")}>
                       {formatCurrency(Math.abs(saldo))}
                       {saldo < 0 && " (CR)"}

@@ -7,27 +7,42 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import { lancamentosCaixa as initialData, formatCurrency, LancamentoCaixa } from "@/data/financialData";
+import MonthFilter from "@/components/MonthFilter";
+import { lancamentosCaixa as initialData, formatCurrency, LancamentoCaixa, meses } from "@/data/financialData";
 import { cn } from "@/lib/utils";
 
 const categorias = ["Mensalidade", "Contribuição", "Rendimento", "Tarifa", "Reembolso", "Utilidade", "Evento", "Outros"];
 
+const getMonthFromDate = (data: string): string => {
+  const parts = data.split('/');
+  if (parts.length < 2) return '';
+  const monthNum = parseInt(parts[1], 10);
+  return meses[monthNum - 1] || '';
+};
+
 const LivroCaixa = () => {
   const [lancamentos, setLancamentos] = useState<LancamentoCaixa[]>(initialData);
   const [search, setSearch] = useState("");
+  const [mesSelecionado, setMesSelecionado] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<LancamentoCaixa | null>(null);
   const [form, setForm] = useState({ data: "", credito: "", debito: "", historico: "", categoria: "Mensalidade" });
   const { toast } = useToast();
 
-  const filtered = lancamentos.filter(l =>
-    l.historico.toLowerCase().includes(search.toLowerCase()) ||
-    l.categoria.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = lancamentos.filter(l => {
+    const matchSearch = l.historico.toLowerCase().includes(search.toLowerCase()) ||
+      l.categoria.toLowerCase().includes(search.toLowerCase());
+    const matchMonth = mesSelecionado === "TODOS" || getMonthFromDate(l.data) === mesSelecionado;
+    return matchSearch && matchMonth;
+  });
 
-  const totalCreditos = lancamentos.reduce((s, l) => s + l.credito, 0);
-  const totalDebitos = lancamentos.reduce((s, l) => s + l.debito, 0);
-  const saldoAtual = lancamentos[lancamentos.length - 1]?.saldo || 0;
+  const lancamentosDoMes = mesSelecionado === "TODOS"
+    ? lancamentos
+    : lancamentos.filter(l => getMonthFromDate(l.data) === mesSelecionado);
+
+  const totalCreditos = lancamentosDoMes.reduce((s, l) => s + l.credito, 0);
+  const totalDebitos = lancamentosDoMes.reduce((s, l) => s + l.debito, 0);
+  const saldoAtual = lancamentosDoMes.length > 0 ? lancamentosDoMes[lancamentosDoMes.length - 1].saldo : 0;
 
   const recalcSaldos = (items: LancamentoCaixa[]): LancamentoCaixa[] => {
     let saldo = 22864.74; // saldo inicial
@@ -81,9 +96,12 @@ const LivroCaixa = () => {
     toast({ title: "Importação de Extrato", description: "Funcionalidade de importação automática de extrato bancário disponível com backend integrado." });
   };
 
+  const subtitleMes = mesSelecionado === "TODOS" ? "2026" : `${mesSelecionado}/2026`;
+
   return (
     <div>
-      <PageHeader title="Livro Caixa" subtitle="Movimento bancário — Janeiro/2026">
+      <PageHeader title="Livro Caixa" subtitle={`Movimento bancário — ${subtitleMes}`}>
+        <MonthFilter value={mesSelecionado} onChange={setMesSelecionado} />
         <Button variant="outline" onClick={handleImportExtrato} className="border-border text-muted-foreground hover:text-primary">
           <Upload className="w-4 h-4 mr-2" /> Importar Extrato
         </Button>
