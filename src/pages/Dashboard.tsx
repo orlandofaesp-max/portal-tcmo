@@ -25,8 +25,8 @@ const allMonthlyData = [
 ];
 
 const composicaoData = [
-  { name: 'Conta Corrente', value: 17074.77, color: 'hsl(210, 80%, 55%)' },
-  { name: 'Fundo de Reserva', value: 178507.57, color: 'hsl(42, 80%, 55%)' },
+  { name: 'Conta Corrente', value: 18888.23, color: 'hsl(210, 80%, 55%)' },
+  { name: 'Fundo de Reserva', value: 179692.93, color: 'hsl(42, 80%, 55%)' },
 ];
 
 const composicaoByMonth: Record<string, typeof composicaoData> = {
@@ -35,8 +35,8 @@ const composicaoByMonth: Record<string, typeof composicaoData> = {
     { name: 'Fundo de Reserva', value: 178507.57, color: 'hsl(42, 80%, 55%)' },
   ],
   FEV: [
-    { name: 'Conta Corrente', value: 20073.59, color: 'hsl(210, 80%, 55%)' },
-    { name: 'Fundo de Reserva', value: 178507.57, color: 'hsl(42, 80%, 55%)' },
+    { name: 'Conta Corrente', value: 18888.23, color: 'hsl(210, 80%, 55%)' },
+    { name: 'Fundo de Reserva', value: 179692.93, color: 'hsl(42, 80%, 55%)' },
   ],
 };
 
@@ -95,7 +95,7 @@ const Dashboard = () => {
   }).length;
 
   const saldoAtual = mesSelecionado === "TODOS" ? 198581.16
-    : mesSelecionado === "JAN" ? 195582.34 : 198581.16;
+    : mesSelecionado === "JAN" ? 195582.34 : mesSelecionado === "FEV" ? 198581.16 : 198581.16;
 
   const monthlyDataFiltered = mesSelecionado === "TODOS"
     ? allMonthlyData.filter(d => d.entradas > 0 || d.saidas > 0)

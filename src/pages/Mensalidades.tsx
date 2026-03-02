@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import MonthFilter from "@/components/MonthFilter";
+import ExtratoIndividual from "@/components/ExtratoIndividual";
 import { membros as initialMembros, meses, formatCurrency, Membro, PagamentoMensalidade } from "@/data/financialData";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const Mensalidades = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pagamentoDialog, setPagamentoDialog] = useState(false);
   const [extratoDialog, setExtratoDialog] = useState(false);
+  const [extratoView, setExtratoView] = useState<Membro | null>(null);
   const [editingMembro, setEditingMembro] = useState<Membro | null>(null);
   const [selectedMembro, setSelectedMembro] = useState<Membro | null>(null);
   const [formData, setFormData] = useState({ nome: "", mensalidadeValor: "30", saldoAnterior: "0" });
@@ -106,8 +108,7 @@ const Mensalidades = () => {
   };
 
   const handleViewExtrato = (m: Membro) => {
-    setSelectedMembro(m);
-    setExtratoDialog(true);
+    setExtratoView(m);
   };
 
   const handleSendWhatsApp = (m: Membro) => {
@@ -115,6 +116,16 @@ const Mensalidades = () => {
   };
 
   const subtitleMes = mesSelecionado === "TODOS" ? "2026" : `${mesSelecionado}/2026`;
+
+  if (extratoView) {
+    return (
+      <ExtratoIndividual
+        membro={extratoView}
+        onBack={() => setExtratoView(null)}
+        onSendWhatsApp={handleSendWhatsApp}
+      />
+    );
+  }
 
   return (
     <div>
