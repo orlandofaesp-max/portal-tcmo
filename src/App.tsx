@@ -14,6 +14,7 @@ import LivroCaixa from "@/pages/LivroCaixa";
 import Demonstracoes from "@/pages/Demonstracoes";
 import Associados from "@/pages/tesouraria/Associados";
 import Categorias from "@/pages/tesouraria/Categorias";
+import ExtratoAssociado from "@/pages/tesouraria/ExtratoAssociado";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
 import Pessoas from "@/pages/secretaria/Pessoas";
