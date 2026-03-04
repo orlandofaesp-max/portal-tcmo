@@ -16,6 +16,8 @@ import Associados from "@/pages/tesouraria/Associados";
 import Categorias from "@/pages/tesouraria/Categorias";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
+import Pessoas from "@/pages/secretaria/Pessoas";
+import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
