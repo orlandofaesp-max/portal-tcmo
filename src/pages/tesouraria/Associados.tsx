@@ -27,6 +27,7 @@ const Associados = () => {
   const createMut = useCreateAssociado();
   const updateMut = useUpdateAssociado();
   const isCongal = useAuth().usuario?.perfil === "congal";
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
