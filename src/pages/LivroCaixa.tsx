@@ -1,129 +1,146 @@
 import { useState } from "react";
-import { Plus, Edit2, Trash2, Search, Upload, Download } from "lucide-react";
+import { Plus, Edit2, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
-import MonthFilter from "@/components/MonthFilter";
-import { lancamentosCaixa as initialData, formatCurrency, LancamentoCaixa, meses } from "@/data/financialData";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useLancamentos, useCreateLancamento, useUpdateLancamento,
+  useCategorias, useAssociados, formatCurrency,
+} from "@/hooks/useFinanceiro";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/integrations/supabase/types";
 
-const categorias = ["Mensalidade", "Contribuição", "Rendimento", "Tarifa", "Reembolso", "Utilidade", "Evento", "Outros"];
+type TipoFinanceiro = Database["public"]["Enums"]["tipo_financeiro"];
+type OrigemLancamento = Database["public"]["Enums"]["origem_lancamento"];
 
-const getMonthFromDate = (data: string): string => {
-  const parts = data.split('/');
-  if (parts.length < 2) return '';
-  const monthNum = parseInt(parts[1], 10);
-  return meses[monthNum - 1] || '';
+interface FormState {
+  data: string;
+  tipo: TipoFinanceiro;
+  valor: string;
+  categoria_id: string;
+  associado_id: string;
+  origem: OrigemLancamento;
+  responsavel: string;
+  observacao: string;
+}
+
+const emptyForm: FormState = {
+  data: "", tipo: "entrada", valor: "", categoria_id: "", associado_id: "",
+  origem: "manual", responsavel: "", observacao: "",
 };
 
 const LivroCaixa = () => {
-  const [lancamentos, setLancamentos] = useState<LancamentoCaixa[]>(initialData);
+  const { data: lancamentos = [], isLoading } = useLancamentos();
+  const { data: categorias = [] } = useCategorias();
+  const { data: associados = [] } = useAssociados();
+  const createMutation = useCreateLancamento();
+  const updateMutation = useUpdateLancamento();
+  const { isPerfil } = useAuth();
+  const canEdit = isPerfil("tesouraria") && !isPerfil("congal") || isPerfil("tesouraria");
+  const isCongal = useAuth().usuario?.perfil === "congal";
+
   const [search, setSearch] = useState("");
-  const [mesSelecionado, setMesSelecionado] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<LancamentoCaixa | null>(null);
-  const [form, setForm] = useState({ data: "", credito: "", debito: "", historico: "", categoria: "Mensalidade" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(emptyForm);
   const { toast } = useToast();
 
-  const filtered = lancamentos.filter(l => {
-    const matchSearch = l.historico.toLowerCase().includes(search.toLowerCase()) ||
-      l.categoria.toLowerCase().includes(search.toLowerCase());
-    const matchMonth = mesSelecionado === "TODOS" || getMonthFromDate(l.data) === mesSelecionado;
-    return matchSearch && matchMonth;
+  const filtered = lancamentos.filter((l) => {
+    const catNome = (l as any).categorias_financeiras?.nome || "";
+    const obs = l.observacao || "";
+    const q = search.toLowerCase();
+    return catNome.toLowerCase().includes(q) || obs.toLowerCase().includes(q) || l.responsavel?.toLowerCase().includes(q);
   });
 
-  const lancamentosDoMes = mesSelecionado === "TODOS"
-    ? lancamentos
-    : lancamentos.filter(l => getMonthFromDate(l.data) === mesSelecionado);
+  const totalEntradas = lancamentos.reduce((s, l) => s + (l.tipo === "entrada" ? l.valor : 0), 0);
+  const totalSaidas = lancamentos.reduce((s, l) => s + (l.tipo === "saida" ? l.valor : 0), 0);
+  const saldo = totalEntradas - totalSaidas;
 
-  const totalCreditos = lancamentosDoMes.reduce((s, l) => s + l.credito, 0);
-  const totalDebitos = lancamentosDoMes.reduce((s, l) => s + l.debito, 0);
-  const saldoAtual = lancamentosDoMes.length > 0 ? lancamentosDoMes[lancamentosDoMes.length - 1].saldo : 0;
-
-  const recalcSaldos = (items: LancamentoCaixa[]): LancamentoCaixa[] => {
-    let saldo = 22864.74; // saldo inicial
-    return items.map(item => {
-      if (item.historico === 'Saldo Anterior') return { ...item, saldo };
-      saldo = saldo + item.credito - item.debito;
-      return { ...item, saldo };
-    });
-  };
-
-  const handleSave = () => {
-    if (!form.historico.trim() || !form.data.trim()) return;
-    if (editing) {
-      const updated = lancamentos.map(l => l.id === editing.id ? {
-        ...l, data: form.data, credito: Number(form.credito) || 0, debito: Number(form.debito) || 0,
-        historico: form.historico, categoria: form.categoria, saldo: 0,
-      } : l);
-      setLancamentos(recalcSaldos(updated));
-      toast({ title: "Lançamento atualizado!" });
-    } else {
-      const newItem: LancamentoCaixa = {
-        id: String(Date.now()), data: form.data, credito: Number(form.credito) || 0,
-        debito: Number(form.debito) || 0, historico: form.historico, categoria: form.categoria, saldo: 0,
-      };
-      const sorted = [...lancamentos, newItem].sort((a, b) => {
-        const [da, ma, ya] = a.data.split('/').map(Number);
-        const [db, mb, yb] = b.data.split('/').map(Number);
-        return (ya - yb) || (ma - mb) || (da - db);
-      });
-      setLancamentos(recalcSaldos(sorted));
-      toast({ title: "Lançamento adicionado!" });
+  const handleSave = async () => {
+    if (!form.data || !form.valor || !form.categoria_id) {
+      toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
+      return;
     }
-    setDialogOpen(false);
-    setEditing(null);
-    setForm({ data: "", credito: "", debito: "", historico: "", categoria: "Mensalidade" });
+    const payload = {
+      data: form.data,
+      tipo: form.tipo,
+      valor: Number(form.valor),
+      categoria_id: form.categoria_id,
+      associado_id: form.associado_id || null,
+      origem: form.origem,
+      responsavel: form.responsavel || null,
+      observacao: form.observacao || null,
+    };
+    try {
+      if (editingId) {
+        await updateMutation.mutateAsync({ id: editingId, ...payload });
+        toast({ title: "Lançamento atualizado!" });
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast({ title: "Lançamento adicionado!" });
+      }
+      setDialogOpen(false);
+      setEditingId(null);
+      setForm(emptyForm);
+    } catch (e: any) {
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+    }
   };
 
-  const handleEdit = (l: LancamentoCaixa) => {
-    setEditing(l);
-    setForm({ data: l.data, credito: String(l.credito || ""), debito: String(l.debito || ""), historico: l.historico, categoria: l.categoria });
+  const handleEdit = (l: any) => {
+    setEditingId(l.id);
+    setForm({
+      data: l.data,
+      tipo: l.tipo,
+      valor: String(l.valor),
+      categoria_id: l.categoria_id,
+      associado_id: l.associado_id || "",
+      origem: l.origem,
+      responsavel: l.responsavel || "",
+      observacao: l.observacao || "",
+    });
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = lancamentos.filter(l => l.id !== id);
-    setLancamentos(recalcSaldos(updated));
-    toast({ title: "Lançamento removido!", variant: "destructive" });
+  const openNew = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
   };
 
-  const handleImportExtrato = () => {
-    toast({ title: "Importação de Extrato", description: "Funcionalidade de importação automática de extrato bancário disponível com backend integrado." });
-  };
-
-  const subtitleMes = mesSelecionado === "TODOS" ? "2026" : `${mesSelecionado}/2026`;
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground text-sm">Carregando...</p></div>;
+  }
 
   return (
     <div>
-      <PageHeader title="Livro Caixa" subtitle={`Movimento bancário — ${subtitleMes}`}>
-        <MonthFilter value={mesSelecionado} onChange={setMesSelecionado} />
-        <Button variant="outline" onClick={handleImportExtrato} className="border-border text-muted-foreground hover:text-primary">
-          <Upload className="w-4 h-4 mr-2" /> Importar Extrato
-        </Button>
-        <Button onClick={() => { setEditing(null); setForm({ data: "", credito: "", debito: "", historico: "", categoria: "Mensalidade" }); setDialogOpen(true); }}
-          className="bg-gradient-gold text-primary-foreground hover:opacity-90">
-          <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
-        </Button>
+      <PageHeader title="Livro Caixa" subtitle="Lançamentos financeiros">
+        {!isCongal && (
+          <Button onClick={openNew} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+            <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
+          </Button>
+        )}
       </PageHeader>
 
-      {/* Summary Cards */}
+      {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Total Créditos</p>
-          <p className="text-lg font-bold text-success font-mono">{formatCurrency(totalCreditos)}</p>
+          <p className="text-xs text-muted-foreground uppercase">Total Entradas</p>
+          <p className="text-lg font-bold text-success font-mono">{formatCurrency(totalEntradas)}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Total Débitos</p>
-          <p className="text-lg font-bold text-destructive font-mono">{formatCurrency(totalDebitos)}</p>
+          <p className="text-xs text-muted-foreground uppercase">Total Saídas</p>
+          <p className="text-lg font-bold text-destructive font-mono">{formatCurrency(totalSaidas)}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 shadow-gold border-primary/20">
-          <p className="text-xs text-muted-foreground uppercase">Saldo Atual</p>
-          <p className="text-lg font-bold text-primary font-mono">{formatCurrency(saldoAtual)}</p>
+          <p className="text-xs text-muted-foreground uppercase">Saldo</p>
+          <p className="text-lg font-bold text-primary font-mono">{formatCurrency(saldo)}</p>
         </div>
       </div>
 
@@ -140,41 +157,47 @@ const LivroCaixa = () => {
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Data</th>
-                <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Histórico</th>
-                <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Categoria</th>
-                <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Crédito</th>
-                <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Débito</th>
-                <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Saldo</th>
-                <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>
+                <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Categoria</th>
+                <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Observação</th>
+                <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Tipo</th>
+                <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Valor</th>
+                <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Responsável</th>
+                {!isCongal && <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>}
               </tr>
             </thead>
             <tbody>
               {filtered.map((l) => (
                 <tr key={l.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3 text-xs font-mono text-muted-foreground">{l.data}</td>
-                  <td className="px-5 py-3 text-sm text-card-foreground">{l.historico}</td>
+                  <td className="px-5 py-3 text-sm text-card-foreground">{(l as any).categorias_financeiras?.nome || "—"}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground max-w-[200px] truncate">{l.observacao || "—"}</td>
                   <td className="px-3 py-3 text-center">
-                    <span className="text-[10px] font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">{l.categoria}</span>
+                    <span className={cn("text-[10px] font-medium px-2 py-1 rounded-full",
+                      l.tipo === "entrada" ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                    )}>
+                      {l.tipo === "entrada" ? "Entrada" : "Saída"}
+                    </span>
                   </td>
-                  <td className={cn("px-5 py-3 text-right text-xs font-mono", l.credito > 0 ? "text-success" : "text-muted-foreground/30")}>
-                    {l.credito > 0 ? formatCurrency(l.credito) : "—"}
+                  <td className={cn("px-5 py-3 text-right text-xs font-mono font-medium",
+                    l.tipo === "entrada" ? "text-success" : "text-destructive"
+                  )}>
+                    {l.tipo === "entrada" ? "+" : "-"}{formatCurrency(l.valor)}
                   </td>
-                  <td className={cn("px-5 py-3 text-right text-xs font-mono", l.debito > 0 ? "text-destructive" : "text-muted-foreground/30")}>
-                    {l.debito > 0 ? formatCurrency(l.debito) : "—"}
-                  </td>
-                  <td className="px-5 py-3 text-right text-xs font-mono font-medium text-card-foreground">{formatCurrency(l.saldo)}</td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(l)}>
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(l.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{l.responsavel || "—"}</td>
+                  {!isCongal && (
+                    <td className="px-3 py-3">
+                      <div className="flex items-center justify-center">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(l)}>
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={7} className="text-center py-8 text-sm text-muted-foreground">Nenhum lançamento encontrado.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -182,30 +205,82 @@ const LivroCaixa = () => {
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-card border-border">
+        <DialogContent className="bg-card border-border max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-card-foreground">{editing ? "Editar Lançamento" : "Novo Lançamento"}</DialogTitle>
+            <DialogTitle className="text-card-foreground">{editingId ? "Editar Lançamento" : "Novo Lançamento"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div><Label className="text-muted-foreground">Data</Label>
-              <Input placeholder="DD/MM/AA" value={form.data} onChange={(e) => setForm(p => ({ ...p, data: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-            <div><Label className="text-muted-foreground">Histórico</Label>
-              <Input value={form.historico} onChange={(e) => setForm(p => ({ ...p, historico: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-            <div><Label className="text-muted-foreground">Categoria</Label>
-              <Select value={form.categoria} onValueChange={(v) => setForm(p => ({ ...p, categoria: v }))}>
-                <SelectTrigger className="bg-muted border-border mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>{categorias.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-              </Select></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-muted-foreground">Crédito (R$)</Label>
-                <Input type="number" value={form.credito} onChange={(e) => setForm(p => ({ ...p, credito: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-              <div><Label className="text-muted-foreground">Débito (R$)</Label>
-                <Input type="number" value={form.debito} onChange={(e) => setForm(p => ({ ...p, debito: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+              <div>
+                <Label className="text-muted-foreground">Data *</Label>
+                <Input type="date" value={form.data} onChange={(e) => setForm((p) => ({ ...p, data: e.target.value }))} className="bg-muted border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Tipo *</Label>
+                <Select value={form.tipo} onValueChange={(v) => setForm((p) => ({ ...p, tipo: v as TipoFinanceiro }))}>
+                  <SelectTrigger className="bg-muted border-border mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="entrada">Entrada</SelectItem>
+                    <SelectItem value="saida">Saída</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Valor (R$) *</Label>
+                <Input type="number" step="0.01" value={form.valor} onChange={(e) => setForm((p) => ({ ...p, valor: e.target.value }))} className="bg-muted border-border mt-1" />
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Categoria *</Label>
+                <Select value={form.categoria_id} onValueChange={(v) => setForm((p) => ({ ...p, categoria_id: v }))}>
+                  <SelectTrigger className="bg-muted border-border mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {categorias.filter(c => c.ativa).map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Associado (opcional)</Label>
+              <Select value={form.associado_id} onValueChange={(v) => setForm((p) => ({ ...p, associado_id: v }))}>
+                <SelectTrigger className="bg-muted border-border mt-1"><SelectValue placeholder="Nenhum" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Nenhum</SelectItem>
+                  {associados.filter(a => a.ativo).map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Origem</Label>
+                <Select value={form.origem} onValueChange={(v) => setForm((p) => ({ ...p, origem: v as OrigemLancamento }))}>
+                  <SelectTrigger className="bg-muted border-border mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual</SelectItem>
+                    <SelectItem value="extrato">Extrato</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Responsável</Label>
+                <Input value={form.responsavel} onChange={(e) => setForm((p) => ({ ...p, responsavel: e.target.value }))} className="bg-muted border-border mt-1" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Observação</Label>
+              <Textarea value={form.observacao} onChange={(e) => setForm((p) => ({ ...p, observacao: e.target.value }))} className="bg-muted border-border mt-1" rows={2} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-border text-muted-foreground">Cancelar</Button>
-            <Button onClick={handleSave} className="bg-gradient-gold text-primary-foreground hover:opacity-90">Salvar</Button>
+            <Button onClick={handleSave} disabled={createMutation.isPending || updateMutation.isPending} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+              {(createMutation.isPending || updateMutation.isPending) ? "Salvando..." : "Salvar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

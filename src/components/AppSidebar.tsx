@@ -8,11 +8,12 @@ import {
   Package,
   Library,
   ClipboardList,
-  Settings,
   Archive,
   ChevronRight,
   LogOut,
   ShieldCheck,
+  Tag,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +33,8 @@ const modules = [
     icon: Receipt,
     items: [
       { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/tesouraria/associados", icon: UserCheck, label: "Associados" },
+      { to: "/tesouraria/categorias", icon: Tag, label: "Categorias" },
       { to: "/tesouraria/mensalidades", icon: Receipt, label: "Mensalidades" },
       { to: "/tesouraria/livro-caixa", icon: BookOpen, label: "Livro Caixa" },
       { to: "/tesouraria/demonstracoes", icon: TrendingUp, label: "Demonstrações" },
