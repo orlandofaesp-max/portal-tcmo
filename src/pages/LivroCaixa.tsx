@@ -131,11 +131,14 @@ const LivroCaixa = () => {
   return (
     <div>
       <PageHeader title="Livro Caixa" subtitle="Lançamentos financeiros">
-        {!isCongal && (
-          <Button onClick={openNew} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
-            <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <MonthFilter value={mesFiltro} onChange={setMesFiltro} />
+          {!isCongal && (
+            <Button onClick={openNew} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+              <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       {/* Summary */}
