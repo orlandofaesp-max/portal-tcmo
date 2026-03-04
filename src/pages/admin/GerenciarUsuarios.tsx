@@ -77,28 +77,19 @@ const GerenciarUsuarios = () => {
         setSaving(false);
         return;
       }
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.senha,
-        options: { emailRedirectTo: window.location.origin },
+
+      const { data: response, error: fnError } = await supabase.functions.invoke("create-user", {
+        body: {
+          email: form.email,
+          password: form.senha,
+          nome: form.nome,
+          perfil: form.perfil,
+          telefone: form.telefone || null,
+        },
       });
 
-      if (authError || !authData.user) {
-        toast({ title: "Erro ao criar usuário", description: authError?.message || "Erro desconhecido", variant: "destructive" });
-        setSaving(false);
-        return;
-      }
-
-      const { error } = await supabase.from("usuarios").insert({
-        user_id: authData.user.id,
-        nome: form.nome,
-        email: form.email,
-        perfil: form.perfil,
-        telefone: form.telefone || null,
-      });
-
-      if (error) {
-        toast({ title: "Erro ao registrar perfil", description: error.message, variant: "destructive" });
+      if (fnError || response?.error) {
+        toast({ title: "Erro ao criar usuário", description: response?.error || fnError?.message || "Erro desconhecido", variant: "destructive" });
       } else {
         toast({ title: "Usuário criado com sucesso!" });
       }
