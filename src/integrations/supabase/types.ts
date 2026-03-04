@@ -197,6 +197,33 @@ export type Database = {
           },
         ]
       }
+      fundo_reserva: {
+        Row: {
+          created_at: string
+          data_movimento: string
+          descricao: string
+          entrada: number
+          id: string
+          saida: number
+        }
+        Insert: {
+          created_at?: string
+          data_movimento: string
+          descricao: string
+          entrada?: number
+          id?: string
+          saida?: number
+        }
+        Update: {
+          created_at?: string
+          data_movimento?: string
+          descricao?: string
+          entrada?: number
+          id?: string
+          saida?: number
+        }
+        Relationships: []
+      }
       historico_religioso: {
         Row: {
           created_at: string
