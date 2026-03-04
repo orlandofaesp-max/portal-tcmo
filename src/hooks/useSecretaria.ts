@@ -94,12 +94,36 @@ export const useCruzamentos = (pessoaId: string | undefined) =>
 export const useCreateCruzamento = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { pessoa_id: string; linha?: string | null; data_cruzamento?: string | null; observacao?: string | null }) => {
+    mutationFn: async (payload: { pessoa_id: string; linha?: string | null; serie?: string | null; data_cruzamento?: string | null; observacao?: string | null }) => {
       const { data, error } = await supabase.from("cruzamentos").insert(payload).select().single();
       if (error) throw error;
       return data;
     },
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["cruzamentos", v.pessoa_id] }),
+  });
+};
+
+export const useUpdateCruzamento = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, pessoa_id, ...payload }: { id: string; pessoa_id: string; [key: string]: any }) => {
+      const { data, error } = await supabase.from("cruzamentos").update(payload).eq("id", id).select().single();
+      if (error) throw error;
+      return { ...data, pessoa_id };
+    },
+    onSuccess: (d) => qc.invalidateQueries({ queryKey: ["cruzamentos", d.pessoa_id] }),
+  });
+};
+
+export const useUpdateEntidade = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, pessoa_id, ...payload }: { id: string; pessoa_id: string; [key: string]: any }) => {
+      const { data, error } = await supabase.from("entidades").update(payload).eq("id", id).select().single();
+      if (error) throw error;
+      return { ...data, pessoa_id };
+    },
+    onSuccess: (d) => qc.invalidateQueries({ queryKey: ["entidades", d.pessoa_id] }),
   });
 };
 
