@@ -261,7 +261,7 @@ const Mensalidades = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGerarDialog(false)} className="border-border text-muted-foreground">Cancelar</Button>
-            <Button onClick={handleGerar} disabled={createMens.isPending} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+            <Button onClick={handleGerarClick} disabled={createMens.isPending} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
               {createMens.isPending ? "Gerando..." : "Gerar"}
             </Button>
           </DialogFooter>
