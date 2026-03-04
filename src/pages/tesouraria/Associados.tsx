@@ -103,7 +103,7 @@ const Associados = () => {
                 <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Mensalidade</th>
                 <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Saldo Ant.</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Status</th>
-                {!isCongal && <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>}
+                <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
