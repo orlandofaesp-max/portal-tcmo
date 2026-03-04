@@ -92,7 +92,7 @@ const AppSidebar = () => {
           if (!isPerfil(mod.perfil)) return null;
           return (
             <div key={mod.label}>
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 mt-4 px-3 first:mt-0">
+              <p className="text-[10px] uppercase tracking-widest text-sidebar-foreground/50 mb-2 mt-4 px-3 first:mt-0">
                 {mod.label}
               </p>
               {mod.items.map((item) => {
