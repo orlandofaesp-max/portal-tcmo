@@ -44,6 +44,48 @@ export type Database = {
         }
         Relationships: []
       }
+      autores: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      categorias_biblioteca: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       categorias_financeiras: {
         Row: {
           ativa: boolean
@@ -165,6 +207,57 @@ export type Database = {
           },
         ]
       }
+      emprestimos: {
+        Row: {
+          created_at: string
+          data_devolucao: string | null
+          data_emprestimo: string
+          data_prevista_devolucao: string | null
+          devolucao_aprovada: boolean
+          exemplar_id: string
+          id: string
+          observacao: string | null
+          pessoa_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_devolucao?: string | null
+          data_emprestimo?: string
+          data_prevista_devolucao?: string | null
+          devolucao_aprovada?: boolean
+          exemplar_id: string
+          id?: string
+          observacao?: string | null
+          pessoa_id: string
+        }
+        Update: {
+          created_at?: string
+          data_devolucao?: string | null
+          data_emprestimo?: string
+          data_prevista_devolucao?: string | null
+          devolucao_aprovada?: boolean
+          exemplar_id?: string
+          id?: string
+          observacao?: string | null
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emprestimos_exemplar_id_fkey"
+            columns: ["exemplar_id"]
+            isOneToOne: false
+            referencedRelation: "exemplares"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "emprestimos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entidades: {
         Row: {
           ativa: boolean
@@ -202,6 +295,41 @@ export type Database = {
             columns: ["pessoa_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exemplares: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          disponivel: boolean
+          id: string
+          localizacao: string | null
+          obra_id: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          disponivel?: boolean
+          id?: string
+          localizacao?: string | null
+          obra_id: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          disponivel?: boolean
+          id?: string
+          localizacao?: string | null
+          obra_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exemplares_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
             referencedColumns: ["id"]
           },
         ]
@@ -366,6 +494,54 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obras: {
+        Row: {
+          arquivo_url: string | null
+          autor_id: string | null
+          categoria_id: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          tipo: string | null
+          titulo: string
+        }
+        Insert: {
+          arquivo_url?: string | null
+          autor_id?: string | null
+          categoria_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string | null
+          titulo: string
+        }
+        Update: {
+          arquivo_url?: string | null
+          autor_id?: string | null
+          categoria_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "autores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "obras_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_biblioteca"
             referencedColumns: ["id"]
           },
         ]
