@@ -72,6 +72,7 @@ const ProtectedRoutes = () => {
           <Route path="/tesouraria/mensalidades" element={<ModuleRoute perfil="tesouraria"><Mensalidades /></ModuleRoute>} />
           <Route path="/tesouraria/livro-caixa" element={<ModuleRoute perfil="tesouraria"><LivroCaixa /></ModuleRoute>} />
           <Route path="/tesouraria/demonstracoes" element={<ModuleRoute perfil="tesouraria"><Demonstracoes /></ModuleRoute>} />
+          <Route path="/tesouraria/fundo-reserva" element={<ModuleRoute perfil="tesouraria"><FundoReserva /></ModuleRoute>} />
           {/* Secretaria */}
           <Route path="/secretaria/pessoas" element={<ModuleRoute perfil="secretaria"><Pessoas /></ModuleRoute>} />
           <Route path="/secretaria/pessoas/:id" element={<ModuleRoute perfil="secretaria"><PessoaPerfil /></ModuleRoute>} />

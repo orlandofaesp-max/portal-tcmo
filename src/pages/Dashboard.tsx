@@ -139,7 +139,7 @@ const Dashboard = () => {
     { name: "Rendimentos", value: fundoReserva.rendimentos || 0 },
   ];
 
-  const isLoading = loadingL || loadingM || loadingA;
+  const isLoading = loadingL || loadingM || loadingF;
   const labelPeriodo = mesFiltro === "TODOS" ? `Acumulado ${anoAtual}` : `${mesFiltro}/${anoAtual}`;
 
   if (isLoading) {
