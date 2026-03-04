@@ -181,6 +181,37 @@ export const useUpdateMensalidade = () => {
   });
 };
 
+// ============ FUNDO DE RESERVA ============
+
+export const useFundoReserva = () =>
+  useQuery({
+    queryKey: ["fundo_reserva"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fundo_reserva")
+        .select("*")
+        .order("data_movimento", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const useCreateFundoReserva = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { data_movimento: string; descricao: string; entrada: number; saida: number }) => {
+      const { data, error } = await supabase.from("fundo_reserva").insert(input).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["fundo_reserva"] });
+      qc.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+};
+
 // ============ CONFIGURAÇÕES ============
 
 export const useConfiguracao = (chave: string) =>

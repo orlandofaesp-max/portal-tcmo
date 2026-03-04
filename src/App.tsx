@@ -19,6 +19,7 @@ import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
 import Pessoas from "@/pages/secretaria/Pessoas";
 import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
+import FundoReserva from "@/pages/tesouraria/FundoReserva";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const ProtectedRoutes = () => {
           <Route path="/tesouraria/mensalidades" element={<ModuleRoute perfil="tesouraria"><Mensalidades /></ModuleRoute>} />
           <Route path="/tesouraria/livro-caixa" element={<ModuleRoute perfil="tesouraria"><LivroCaixa /></ModuleRoute>} />
           <Route path="/tesouraria/demonstracoes" element={<ModuleRoute perfil="tesouraria"><Demonstracoes /></ModuleRoute>} />
+          <Route path="/tesouraria/fundo-reserva" element={<ModuleRoute perfil="tesouraria"><FundoReserva /></ModuleRoute>} />
           {/* Secretaria */}
           <Route path="/secretaria/pessoas" element={<ModuleRoute perfil="secretaria"><Pessoas /></ModuleRoute>} />
           <Route path="/secretaria/pessoas/:id" element={<ModuleRoute perfil="secretaria"><PessoaPerfil /></ModuleRoute>} />

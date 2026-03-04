@@ -12,6 +12,7 @@ import {
   ChevronRight,
   LogOut,
   ShieldCheck,
+  Shield,
   Tag,
   UserCheck,
 } from "lucide-react";
@@ -38,6 +39,7 @@ const modules = [
       { to: "/tesouraria/mensalidades", icon: Receipt, label: "Mensalidades" },
       { to: "/tesouraria/livro-caixa", icon: BookOpen, label: "Livro Caixa" },
       { to: "/tesouraria/demonstracoes", icon: TrendingUp, label: "Demonstrações" },
+      { to: "/tesouraria/fundo-reserva", icon: Shield, label: "Fundo de Reserva" },
     ],
   },
   {

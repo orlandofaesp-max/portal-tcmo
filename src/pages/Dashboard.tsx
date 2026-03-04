@@ -21,14 +21,14 @@ import {
 import StatCard from "@/components/StatCard";
 import PageHeader from "@/components/PageHeader";
 import MonthFilter from "@/components/MonthFilter";
-import { useLancamentos, useMensalidades, useAssociados, formatCurrency, meses } from "@/hooks/useFinanceiro";
+import { useLancamentos, useMensalidades, useFundoReserva, formatCurrency, meses } from "@/hooks/useFinanceiro";
 
 const COLORS_PIE = ["hsl(var(--primary))", "hsl(var(--success))"];
 
 const Dashboard = () => {
   const { data: lancamentos = [], isLoading: loadingL } = useLancamentos();
   const { data: mensalidades = [], isLoading: loadingM } = useMensalidades();
-  const { data: associados = [], isLoading: loadingA } = useAssociados();
+  const { data: fundoData = [], isLoading: loadingF } = useFundoReserva();
 
   const now = new Date();
   const mesAtualIdx = now.getMonth();
@@ -116,19 +116,30 @@ const Dashboard = () => {
     });
   }, [mensalidades, mesFiltro, anoAtual, inadimplencia]);
 
-  // ---- Fundo de reserva (placeholder – based on saldo_anterior of associados) ----
+  // ---- Fundo de reserva (dados reais da tabela fundo_reserva) ----
   const fundoReserva = useMemo(() => {
-    const capital = associados.reduce((s, a) => s + (a.saldo_anterior || 0), 0);
-    const rendimentos = resumo.saldo > 0 ? resumo.saldo * 0.1 : 0; // 10% estimado
-    return { capital, rendimentos, total: capital + rendimentos };
-  }, [associados, resumo]);
+    // Saldo total acumulado
+    const total = fundoData.reduce((s, m) => s + Number(m.entrada) - Number(m.saida), 0);
+    // Rendimentos do período filtrado (descrição contém "rendimento")
+    const filtered = mesFiltro === "TODOS"
+      ? fundoData.filter((m) => new Date(m.data_movimento).getFullYear() === Number(anoAtual))
+      : fundoData.filter((m) => {
+          const d = new Date(m.data_movimento);
+          return d.getFullYear() === Number(anoAtual) && d.getMonth() === mesIdx(mesFiltro);
+        });
+    const rendimentos = filtered
+      .filter((m) => m.descricao.toLowerCase().includes("rendimento"))
+      .reduce((s, m) => s + Number(m.entrada), 0);
+    const capital = total - rendimentos;
+    return { capital, rendimentos, total };
+  }, [fundoData, mesFiltro, anoAtual]);
 
   const pieFundo = [
     { name: "Capital", value: fundoReserva.capital || 1 },
     { name: "Rendimentos", value: fundoReserva.rendimentos || 0 },
   ];
 
-  const isLoading = loadingL || loadingM || loadingA;
+  const isLoading = loadingL || loadingM || loadingF;
   const labelPeriodo = mesFiltro === "TODOS" ? `Acumulado ${anoAtual}` : `${mesFiltro}/${anoAtual}`;
 
   if (isLoading) {
