@@ -20,6 +20,11 @@ import PlaceholderModule from "@/pages/PlaceholderModule";
 import Pessoas from "@/pages/secretaria/Pessoas";
 import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
 import FundoReserva from "@/pages/tesouraria/FundoReserva";
+import BibliotecaDashboard from "@/pages/biblioteca/BibliotecaDashboard";
+import ObrasPage from "@/pages/biblioteca/Obras";
+import AutoresPage from "@/pages/biblioteca/Autores";
+import CategoriasBibliotecaPage from "@/pages/biblioteca/CategoriasBiblioteca";
+import EmprestimosPage from "@/pages/biblioteca/Emprestimos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
