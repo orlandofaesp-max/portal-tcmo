@@ -28,7 +28,7 @@ const COLORS_PIE = ["hsl(var(--primary))", "hsl(var(--success))"];
 const Dashboard = () => {
   const { data: lancamentos = [], isLoading: loadingL } = useLancamentos();
   const { data: mensalidades = [], isLoading: loadingM } = useMensalidades();
-  const { data: associados = [], isLoading: loadingA } = useAssociados();
+  const { data: fundoData = [], isLoading: loadingF } = useFundoReserva();
 
   const now = new Date();
   const mesAtualIdx = now.getMonth();
