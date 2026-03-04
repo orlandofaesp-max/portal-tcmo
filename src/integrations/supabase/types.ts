@@ -86,6 +86,152 @@ export type Database = {
         }
         Relationships: []
       }
+      coroacoes: {
+        Row: {
+          created_at: string
+          data_coroacao: string | null
+          id: string
+          observacao: string | null
+          pessoa_id: string
+          tipo_coroacao: string | null
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          data_coroacao?: string | null
+          id?: string
+          observacao?: string | null
+          pessoa_id: string
+          tipo_coroacao?: string | null
+          titulo?: string
+        }
+        Update: {
+          created_at?: string
+          data_coroacao?: string | null
+          id?: string
+          observacao?: string | null
+          pessoa_id?: string
+          tipo_coroacao?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coroacoes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cruzamentos: {
+        Row: {
+          created_at: string
+          data_cruzamento: string | null
+          id: string
+          linha: string | null
+          observacao: string | null
+          pessoa_id: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          data_cruzamento?: string | null
+          id?: string
+          linha?: string | null
+          observacao?: string | null
+          pessoa_id: string
+          titulo?: string
+        }
+        Update: {
+          created_at?: string
+          data_cruzamento?: string | null
+          id?: string
+          linha?: string | null
+          observacao?: string | null
+          pessoa_id?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cruzamentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entidades: {
+        Row: {
+          created_at: string
+          id: string
+          linha: string | null
+          nome_entidade: string | null
+          observacao: string | null
+          pessoa_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linha?: string | null
+          nome_entidade?: string | null
+          observacao?: string | null
+          pessoa_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linha?: string | null
+          nome_entidade?: string | null
+          observacao?: string | null
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entidades_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      historico_religioso: {
+        Row: {
+          created_at: string
+          data_evento: string | null
+          descricao: string | null
+          id: string
+          pessoa_id: string
+          tipo_evento: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_evento?: string | null
+          descricao?: string | null
+          id?: string
+          pessoa_id: string
+          tipo_evento?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_evento?: string | null
+          descricao?: string | null
+          id?: string
+          pessoa_id?: string
+          tipo_evento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_religioso_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lancamentos: {
         Row: {
           associado_id: string | null
@@ -206,6 +352,48 @@ export type Database = {
           descricao?: string | null
           id?: string
           nome?: Database["public"]["Enums"]["app_perfil"]
+        }
+        Relationships: []
+      }
+      pessoas: {
+        Row: {
+          created_at: string
+          data_ingresso_corrente: string | null
+          data_nascimento: string | null
+          email: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          possui_mensalidade: boolean
+          situacao: string
+          telefone: string | null
+          tipo_vinculo: string | null
+        }
+        Insert: {
+          created_at?: string
+          data_ingresso_corrente?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          possui_mensalidade?: boolean
+          situacao?: string
+          telefone?: string | null
+          tipo_vinculo?: string | null
+        }
+        Update: {
+          created_at?: string
+          data_ingresso_corrente?: string | null
+          data_nascimento?: string | null
+          email?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          possui_mensalidade?: boolean
+          situacao?: string
+          telefone?: string | null
+          tipo_vinculo?: string | null
         }
         Relationships: []
       }
