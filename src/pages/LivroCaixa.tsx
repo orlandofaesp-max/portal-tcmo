@@ -47,6 +47,7 @@ const LivroCaixa = () => {
   const isCongal = useAuth().usuario?.perfil === "congal";
 
   const [search, setSearch] = useState("");
+  const [mesFiltro, setMesFiltro] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
