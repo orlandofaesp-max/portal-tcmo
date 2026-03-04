@@ -32,9 +32,11 @@ const Mensalidades = () => {
   const [filterStatus, setFilterStatus] = useState("todos");
   const [competenciaFilter, setCompetenciaFilter] = useState("TODOS");
   const [gerarDialog, setGerarDialog] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(false);
   const [pagDialog, setPagDialog] = useState(false);
   const [selectedMens, setSelectedMens] = useState<any>(null);
-  const [gerarForm, setGerarForm] = useState({ competencia: "", associado_id: "" });
+  const currentCompetencia = `${String(new Date().getMonth() + 1).padStart(2, "0")}/${new Date().getFullYear()}`;
+  const [gerarForm, setGerarForm] = useState({ competencia: currentCompetencia, associado_id: "" });
   const [pagForm, setPagForm] = useState({ data_pagamento: "" });
 
   // Get current year
