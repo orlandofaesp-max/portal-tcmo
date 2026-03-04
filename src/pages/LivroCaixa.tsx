@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import MonthFilter from "@/components/MonthFilter";
 import {
   useLancamentos, useCreateLancamento, useUpdateLancamento,
-  useCategorias, useAssociados, formatCurrency,
+  useCategorias, useAssociados, formatCurrency, meses,
 } from "@/hooks/useFinanceiro";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/integrations/supabase/types";
