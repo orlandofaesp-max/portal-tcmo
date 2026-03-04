@@ -19,6 +19,7 @@ import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
 import Pessoas from "@/pages/secretaria/Pessoas";
 import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
+import FundoReserva from "@/pages/tesouraria/FundoReserva";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
