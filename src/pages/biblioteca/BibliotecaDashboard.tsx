@@ -21,11 +21,11 @@ const BibliotecaDashboard = () => {
       <PageHeader title="Biblioteca" subtitle="Visão geral do acervo" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatCard title="Disponíveis" value={d.disponiveis} icon={BookOpen} />
-        <StatCard title="Emprestados" value={d.emprestados} icon={BookX} />
-        <StatCard title="Em Atraso" value={d.atrasados} icon={AlertTriangle} />
-        <StatCard title="Empréstimos (mês)" value={d.emprestimosDoMes} icon={ArrowDownUp} />
-        <StatCard title="Devoluções (mês)" value={d.devolucoesDoMes} icon={CheckCircle} />
+        <StatCard title="Disponíveis" value={String(d.disponiveis)} icon={<BookOpen className="w-5 h-5" />} variant="success" />
+        <StatCard title="Emprestados" value={String(d.emprestados)} icon={<BookX className="w-5 h-5" />} variant="info" />
+        <StatCard title="Em Atraso" value={String(d.atrasados)} icon={<AlertTriangle className="w-5 h-5" />} variant="warning" />
+        <StatCard title="Empréstimos (mês)" value={String(d.emprestimosDoMes)} icon={<ArrowDownUp className="w-5 h-5" />} />
+        <StatCard title="Devoluções (mês)" value={String(d.devolucoesDoMes)} icon={<CheckCircle className="w-5 h-5" />} />
       </div>
     </div>
   );
