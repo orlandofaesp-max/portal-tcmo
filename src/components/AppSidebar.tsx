@@ -45,7 +45,7 @@ const modules = [
     perfil: "secretaria" as const,
     icon: ClipboardList,
     items: [
-      { to: "/secretaria", icon: ClipboardList, label: "Secretaria" },
+      { to: "/secretaria/pessoas", icon: UserCheck, label: "Pessoas" },
     ],
   },
   {
