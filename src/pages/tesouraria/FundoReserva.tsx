@@ -105,7 +105,6 @@ const FundoReserva = () => {
         <PageHeader
           title="Fundo de Reserva"
           subtitle="Conta corrente do fundo de reserva"
-          icon={<Shield className="w-6 h-6 text-primary" />}
         />
         <div className="flex items-center gap-3">
           <MonthFilter value={mesFiltro} onChange={setMesFiltro} showAll label="Período" />
