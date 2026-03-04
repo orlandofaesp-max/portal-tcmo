@@ -116,12 +116,23 @@ const Dashboard = () => {
     });
   }, [mensalidades, mesFiltro, anoAtual, inadimplencia]);
 
-  // ---- Fundo de reserva (placeholder – based on saldo_anterior of associados) ----
+  // ---- Fundo de reserva (dados reais da tabela fundo_reserva) ----
   const fundoReserva = useMemo(() => {
-    const capital = associados.reduce((s, a) => s + (a.saldo_anterior || 0), 0);
-    const rendimentos = resumo.saldo > 0 ? resumo.saldo * 0.1 : 0; // 10% estimado
-    return { capital, rendimentos, total: capital + rendimentos };
-  }, [associados, resumo]);
+    // Saldo total acumulado
+    const total = fundoData.reduce((s, m) => s + Number(m.entrada) - Number(m.saida), 0);
+    // Rendimentos do período filtrado (descrição contém "rendimento")
+    const filtered = mesFiltro === "TODOS"
+      ? fundoData.filter((m) => new Date(m.data_movimento).getFullYear() === Number(anoAtual))
+      : fundoData.filter((m) => {
+          const d = new Date(m.data_movimento);
+          return d.getFullYear() === Number(anoAtual) && d.getMonth() === mesIdx(mesFiltro);
+        });
+    const rendimentos = filtered
+      .filter((m) => m.descricao.toLowerCase().includes("rendimento"))
+      .reduce((s, m) => s + Number(m.entrada), 0);
+    const capital = total - rendimentos;
+    return { capital, rendimentos, total };
+  }, [fundoData, mesFiltro, anoAtual]);
 
   const pieFundo = [
     { name: "Capital", value: fundoReserva.capital || 1 },
