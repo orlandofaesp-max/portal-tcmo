@@ -14,6 +14,7 @@ import LivroCaixa from "@/pages/LivroCaixa";
 import Demonstracoes from "@/pages/Demonstracoes";
 import Associados from "@/pages/tesouraria/Associados";
 import Categorias from "@/pages/tesouraria/Categorias";
+import ExtratoAssociado from "@/pages/tesouraria/ExtratoAssociado";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
 import Pessoas from "@/pages/secretaria/Pessoas";
@@ -65,6 +66,7 @@ const ProtectedRoutes = () => {
           <Route path="/admin/usuarios" element={<ModuleRoute perfil="congal"><GerenciarUsuarios /></ModuleRoute>} />
           {/* Tesouraria */}
           <Route path="/tesouraria/associados" element={<ModuleRoute perfil="tesouraria"><Associados /></ModuleRoute>} />
+          <Route path="/tesouraria/associados/:id/extrato" element={<ModuleRoute perfil="tesouraria"><ExtratoAssociado /></ModuleRoute>} />
           <Route path="/tesouraria/categorias" element={<ModuleRoute perfil="tesouraria"><Categorias /></ModuleRoute>} />
           <Route path="/tesouraria/mensalidades" element={<ModuleRoute perfil="tesouraria"><Mensalidades /></ModuleRoute>} />
           <Route path="/tesouraria/livro-caixa" element={<ModuleRoute perfil="tesouraria"><LivroCaixa /></ModuleRoute>} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Edit2, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import PageHeader from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import MonthFilter from "@/components/MonthFilter";
 import {
   useLancamentos, useCreateLancamento, useUpdateLancamento,
-  useCategorias, useAssociados, formatCurrency,
+  useCategorias, useAssociados, formatCurrency, meses,
 } from "@/hooks/useFinanceiro";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/integrations/supabase/types";
@@ -46,20 +47,29 @@ const LivroCaixa = () => {
   const isCongal = useAuth().usuario?.perfil === "congal";
 
   const [search, setSearch] = useState("");
+  const [mesFiltro, setMesFiltro] = useState("TODOS");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const { toast } = useToast();
 
-  const filtered = lancamentos.filter((l) => {
+  const mesFiltrado = useMemo(() => {
+    if (mesFiltro === "TODOS") return lancamentos;
+    return lancamentos.filter((l) => {
+      const mesIdx = new Date(l.data + "T00:00:00").getMonth();
+      return meses[mesIdx] === mesFiltro;
+    });
+  }, [lancamentos, mesFiltro]);
+
+  const filtered = mesFiltrado.filter((l) => {
     const catNome = (l as any).categorias_financeiras?.nome || "";
     const obs = l.observacao || "";
     const q = search.toLowerCase();
     return catNome.toLowerCase().includes(q) || obs.toLowerCase().includes(q) || l.responsavel?.toLowerCase().includes(q);
   });
 
-  const totalEntradas = lancamentos.reduce((s, l) => s + (l.tipo === "entrada" ? l.valor : 0), 0);
-  const totalSaidas = lancamentos.reduce((s, l) => s + (l.tipo === "saida" ? l.valor : 0), 0);
+  const totalEntradas = mesFiltrado.reduce((s, l) => s + (l.tipo === "entrada" ? l.valor : 0), 0);
+  const totalSaidas = mesFiltrado.reduce((s, l) => s + (l.tipo === "saida" ? l.valor : 0), 0);
   const saldo = totalEntradas - totalSaidas;
 
   const handleSave = async () => {
@@ -121,11 +131,14 @@ const LivroCaixa = () => {
   return (
     <div>
       <PageHeader title="Livro Caixa" subtitle="Lançamentos financeiros">
-        {!isCongal && (
-          <Button onClick={openNew} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
-            <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <MonthFilter value={mesFiltro} onChange={setMesFiltro} />
+          {!isCongal && (
+            <Button onClick={openNew} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+              <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
+            </Button>
+          )}
+        </div>
       </PageHeader>
 
       {/* Summary */}

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Edit2, Search } from "lucide-react";
+import { Plus, Edit2, Search, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -26,6 +27,7 @@ const Associados = () => {
   const createMut = useCreateAssociado();
   const updateMut = useUpdateAssociado();
   const isCongal = useAuth().usuario?.perfil === "congal";
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const [search, setSearch] = useState("");
@@ -101,7 +103,7 @@ const Associados = () => {
                 <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Mensalidade</th>
                 <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Saldo Ant.</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Status</th>
-                {!isCongal && <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>}
+                <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -122,15 +124,18 @@ const Associados = () => {
                       {a.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
-                  {!isCongal && (
-                    <td className="px-3 py-3">
-                      <div className="flex items-center justify-center">
+                  <td className="px-3 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" title="Ver extrato" onClick={() => navigate(`/tesouraria/associados/${a.id}/extrato`)}>
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                      {!isCongal && (
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => handleEdit(a)}>
                           <Edit2 className="w-3.5 h-3.5" />
                         </Button>
-                      </div>
-                    </td>
-                  )}
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (

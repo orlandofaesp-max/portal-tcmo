@@ -1,19 +1,27 @@
-import { useMemo } from "react";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
-import { useLancamentos, formatCurrency } from "@/hooks/useFinanceiro";
+import MonthFilter from "@/components/MonthFilter";
+import { useLancamentos, formatCurrency, meses } from "@/hooks/useFinanceiro";
 import { cn } from "@/lib/utils";
 
 const Demonstracoes = () => {
   const { data: lancamentos = [], isLoading } = useLancamentos();
+  const [mesFiltro, setMesFiltro] = useState("TODOS");
+
+  const filtered = useMemo(() => {
+    if (mesFiltro === "TODOS") return lancamentos;
+    return lancamentos.filter((l) => {
+      const mesIdx = new Date(l.data + "T00:00:00").getMonth();
+      return meses[mesIdx] === mesFiltro;
+    });
+  }, [lancamentos, mesFiltro]);
 
   const { categoriasEntrada, categoriasSaida, totalEntradas, totalSaidas, saldo } = useMemo(() => {
     const entMap: Record<string, number> = {};
     const saiMap: Record<string, number> = {};
     let ent = 0, sai = 0;
 
-    lancamentos.forEach((l) => {
+    filtered.forEach((l) => {
       const catNome = (l as any).categorias_financeiras?.nome || "Outros";
       if (l.tipo === "entrada") {
         entMap[catNome] = (entMap[catNome] || 0) + l.valor;
@@ -31,7 +39,7 @@ const Demonstracoes = () => {
       totalSaidas: sai,
       saldo: ent - sai,
     };
-  }, [lancamentos]);
+  }, [filtered]);
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground text-sm">Carregando...</p></div>;
@@ -39,7 +47,9 @@ const Demonstracoes = () => {
 
   return (
     <div>
-      <PageHeader title="Demonstrações Financeiras" subtitle="Movimento financeiro consolidado — Tesouraria" />
+      <PageHeader title="Demonstrações Financeiras" subtitle="Movimento financeiro consolidado — Tesouraria">
+        <MonthFilter value={mesFiltro} onChange={setMesFiltro} />
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -66,6 +76,9 @@ const Demonstracoes = () => {
                       <td className="text-right text-xs font-mono font-medium text-success py-2 px-2">{formatCurrency(val)}</td>
                     </tr>
                   ))}
+                  {categoriasEntrada.length === 0 && (
+                    <tr><td colSpan={2} className="text-center py-4 text-xs text-muted-foreground">Sem entradas no período</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -94,6 +107,9 @@ const Demonstracoes = () => {
                       <td className="text-right text-xs font-mono font-medium text-destructive py-2 px-2">{formatCurrency(val)}</td>
                     </tr>
                   ))}
+                  {categoriasSaida.length === 0 && (
+                    <tr><td colSpan={2} className="text-center py-4 text-xs text-muted-foreground">Sem saídas no período</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -103,7 +119,9 @@ const Demonstracoes = () => {
         {/* Summary */}
         <div className="space-y-6">
           <div className="bg-card rounded-xl border border-primary/20 p-6 shadow-gold">
-            <h3 className="text-sm font-semibold text-primary mb-4">Resultado</h3>
+            <h3 className="text-sm font-semibold text-primary mb-4">
+              Resultado {mesFiltro !== "TODOS" ? `— ${mesFiltro}` : ""}
+            </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-xs text-muted-foreground">Entradas</span>
