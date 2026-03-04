@@ -297,6 +297,24 @@ const Mensalidades = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Confirmação de geração */}
+      <AlertDialog open={confirmDialog} onOpenChange={setConfirmDialog}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-card-foreground">Confirmar geração</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja gerar mensalidades para a competência <strong>{gerarForm.competencia}</strong>?
+              {gerarForm.associado_id
+                ? ` Para o associado selecionado.`
+                : ` Para todos os associados ativos.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border text-muted-foreground">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleGerar} className="bg-gradient-gold text-primary-foreground hover:opacity-90">Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
