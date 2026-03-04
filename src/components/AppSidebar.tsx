@@ -12,6 +12,7 @@ import {
   ChevronRight,
   LogOut,
   ShieldCheck,
+  Shield,
   Tag,
   UserCheck,
 } from "lucide-react";
