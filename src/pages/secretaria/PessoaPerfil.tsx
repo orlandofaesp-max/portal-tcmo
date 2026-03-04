@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Edit2, Calendar, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,9 +15,12 @@ import {
   useCoroacoes, useCreateCoroacao, useDeleteCoroacao,
   useEntidades, useCreateEntidade, useUpdateEntidade, useDeleteEntidade,
   useHistoricoReligioso, useCreateHistoricoReligioso, useDeleteHistoricoReligioso,
+  useObservacoesInternas, useCreateObservacaoInterna, useDeleteObservacaoInterna,
 } from "@/hooks/useSecretaria";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, differenceInYears, differenceInMonths } from "date-fns";
+
+// TODO: integrar pessoa_id com associado_id da Tesouraria para vincular dados financeiros do médium.
 
 const formatDate = (d: string | null) => (d ? format(new Date(d), "dd/MM/yyyy") : "—");
 
@@ -49,6 +53,22 @@ const ENTIDADE_LINHAS = [
   "Linha Oriente",
 ];
 
+const COROACAO_TIPOS = [
+  "Coroa de Erê",
+  "Pai/Mãe Pequeno(a)",
+  "Deka",
+  "Pai/Mãe de Santo",
+];
+
+const HISTORICO_TIPOS = [
+  "Entrada na corrente",
+  "Primeira incorporação",
+  "Cruzamento",
+  "Coroação",
+  "Afastamento",
+  "Retorno à corrente",
+];
+
 const PessoaPerfil = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -60,6 +80,7 @@ const PessoaPerfil = () => {
   const { data: coroacoes = [] } = useCoroacoes(id);
   const { data: entidades = [] } = useEntidades(id);
   const { data: historico = [] } = useHistoricoReligioso(id);
+  const { data: observacoes = [] } = useObservacoesInternas(id);
 
   const createCruz = useCreateCruzamento();
   const updateCruz = useUpdateCruzamento();
@@ -71,10 +92,14 @@ const PessoaPerfil = () => {
   const deleteEnt = useDeleteEntidade();
   const createHist = useCreateHistoricoReligioso();
   const deleteHist = useDeleteHistoricoReligioso();
+  const createObs = useCreateObservacaoInterna();
+  const deleteObs = useDeleteObservacaoInterna();
 
   // Dialog state
   const [dialog, setDialog] = useState<{ type: string; open: boolean; editId?: string }>({ type: "", open: false });
   const [formFields, setFormFields] = useState<Record<string, string>>({});
+  // Entidade management dialog
+  const [entLinhaDialog, setEntLinhaDialog] = useState<{ open: boolean; linha: string }>({ open: false, linha: "" });
 
   const openDialog = (type: string, prefill?: Record<string, string>, editId?: string) => {
     setFormFields(prefill || {});
@@ -97,13 +122,28 @@ const PessoaPerfil = () => {
           break;
         case "entidade":
           if (dialog.editId) {
-            await updateEnt.mutateAsync({ id: dialog.editId, pessoa_id: id, nome_entidade: formFields.nome_entidade || null, observacao: formFields.observacao || null });
+            await updateEnt.mutateAsync({
+              id: dialog.editId,
+              pessoa_id: id,
+              nome_entidade: formFields.nome_entidade || null,
+              observacao: formFields.observacao || null,
+              data_manifestacao: formFields.data_manifestacao || null,
+            });
           } else {
-            await createEnt.mutateAsync({ pessoa_id: id, nome_entidade: formFields.nome_entidade || null, linha: formFields.linha || null, observacao: formFields.observacao || null });
+            await createEnt.mutateAsync({
+              pessoa_id: id,
+              nome_entidade: formFields.nome_entidade || null,
+              linha: formFields.linha || null,
+              observacao: formFields.observacao || null,
+              data_manifestacao: formFields.data_manifestacao || null,
+            });
           }
           break;
         case "historico":
           await createHist.mutateAsync({ pessoa_id: id, tipo_evento: formFields.tipo_evento || null, data_evento: formFields.data_evento || null, descricao: formFields.descricao || null });
+          break;
+        case "observacao":
+          await createObs.mutateAsync({ pessoa_id: id, observacao: formFields.observacao || "", autor: formFields.autor || null, data: formFields.data || undefined });
           break;
       }
       toast({ title: dialog.editId ? "Registro atualizado!" : "Registro adicionado!" });
@@ -121,8 +161,9 @@ const PessoaPerfil = () => {
         case "coroacao": await deleteCor.mutateAsync({ id: itemId, pessoa_id: id }); break;
         case "entidade": await deleteEnt.mutateAsync({ id: itemId, pessoa_id: id }); break;
         case "historico": await deleteHist.mutateAsync({ id: itemId, pessoa_id: id }); break;
+        case "observacao": await deleteObs.mutateAsync({ id: itemId, pessoa_id: id }); break;
       }
-      toast({ title: "Registro removido!" });
+      toast({ title: type === "entidade" ? "Entidade desativada!" : "Registro removido!" });
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -147,23 +188,28 @@ const PessoaPerfil = () => {
     }
   };
 
-  // --- Entidades Grid helpers ---
-  const getEntidade = (linha: string) =>
-    entidades.find((e) => e.linha === linha);
+  // --- Entidades helpers (multiple per line) ---
+  const getEntidadesByLinha = (linha: string) =>
+    entidades.filter((e) => e.linha === linha);
 
-  const handleEntCellClick = (linha: string) => {
+  const handleEntLinhaClick = (linha: string) => {
     if (!canEdit) return;
-    const existing = getEntidade(linha);
-    if (existing) {
-      openDialog("entidade", {
-        linha,
-        nome_entidade: existing.nome_entidade || "",
-        observacao: existing.observacao || "",
-      }, existing.id);
-    } else {
-      openDialog("entidade", { linha });
-    }
+    setEntLinhaDialog({ open: true, linha });
   };
+
+  // --- Indicadores ---
+  const cruzamentosRealizados = cruzamentos.filter(c => (c as any).serie !== "dependencia" && c.data_cruzamento).length;
+  const linhasDesenvolvidas = new Set(entidades.map(e => e.linha)).size;
+
+  const tempoCorrente = (() => {
+    if (!pessoa?.data_ingresso_corrente) return "—";
+    const ingresso = new Date(pessoa.data_ingresso_corrente);
+    const now = new Date();
+    const years = differenceInYears(now, ingresso);
+    const months = differenceInMonths(now, ingresso) % 12;
+    if (years === 0) return `${months} mês(es)`;
+    return `${years} ano(s)${months > 0 ? ` e ${months} mês(es)` : ""}`;
+  })();
 
   if (isLoading || !pessoa) {
     return (
@@ -186,13 +232,45 @@ const PessoaPerfil = () => {
         <p className="text-sm text-muted-foreground">{pessoa.tipo_vinculo || "Sem vínculo"} — {pessoa.situacao}</p>
       </div>
 
+      {/* Indicadores de progresso */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Calendar className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Cruzamentos realizados</p>
+            <p className="text-lg font-bold text-card-foreground">{cruzamentosRealizados} / 42</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Users className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Linhas desenvolvidas</p>
+            <p className="text-lg font-bold text-card-foreground">{linhasDesenvolvidas} / 6</p>
+          </div>
+        </div>
+        <div className="bg-card rounded-xl border border-border p-4 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Clock className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Tempo de corrente</p>
+            <p className="text-lg font-bold text-card-foreground">{tempoCorrente}</p>
+          </div>
+        </div>
+      </div>
+
       <Tabs defaultValue="dados" className="space-y-4">
-        <TabsList className="bg-muted border border-border">
+        <TabsList className="bg-muted border border-border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="dados">Dados Pessoais</TabsTrigger>
           <TabsTrigger value="cruzamentos">Cruzamentos</TabsTrigger>
           <TabsTrigger value="coroacoes">Coroações</TabsTrigger>
           <TabsTrigger value="entidades">Entidades</TabsTrigger>
           <TabsTrigger value="historico">Histórico Religioso</TabsTrigger>
+          <TabsTrigger value="observacoes">Observações</TabsTrigger>
         </TabsList>
 
         {/* Dados Pessoais */}
@@ -231,7 +309,7 @@ const PessoaPerfil = () => {
                       return (
                         <td
                           key={s.value}
-                          className={`p-2 text-center text-xs ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${cruz ? "text-card-foreground" : "text-muted-foreground/40"}`}
+                          className={`p-2 text-center text-xs ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${cruz ? "text-card-foreground bg-primary/5" : "text-muted-foreground/40"}`}
                           onClick={() => handleCruzCellClick(linha, s.value)}
                           title={canEdit ? (cruz ? "Clique para editar" : "Clique para adicionar") : undefined}
                         >
@@ -276,7 +354,7 @@ const PessoaPerfil = () => {
           </div>
         </TabsContent>
 
-        {/* Entidades - Grid */}
+        {/* Entidades - Grid com múltiplas por linha */}
         <TabsContent value="entidades">
           <div className="bg-card rounded-xl border border-border p-6 overflow-x-auto">
             <table className="w-full text-sm border-collapse">
@@ -290,15 +368,21 @@ const PessoaPerfil = () => {
               <tbody>
                 <tr>
                   {ENTIDADE_LINHAS.map((linha) => {
-                    const ent = getEntidade(linha);
+                    const ents = getEntidadesByLinha(linha);
                     return (
                       <td
                         key={linha}
-                        className={`p-3 text-center text-sm ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${ent ? "text-card-foreground font-medium" : "text-muted-foreground/40"}`}
-                        onClick={() => handleEntCellClick(linha)}
-                        title={canEdit ? (ent ? "Clique para editar" : "Clique para adicionar") : undefined}
+                        className={`p-3 text-center text-sm align-top ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${ents.length > 0 ? "text-card-foreground" : "text-muted-foreground/40"}`}
+                        onClick={() => handleEntLinhaClick(linha)}
+                        title={canEdit ? "Clique para gerenciar" : undefined}
                       >
-                        {ent ? (ent.nome_entidade || "—") : "—"}
+                        {ents.length > 0 ? (
+                          <div className="space-y-1">
+                            {ents.map((e) => (
+                              <p key={e.id} className="font-medium text-xs">{e.nome_entidade || "—"}</p>
+                            ))}
+                          </div>
+                        ) : "—"}
                       </td>
                     );
                   })}
@@ -337,6 +421,39 @@ const PessoaPerfil = () => {
             )}
           </div>
         </TabsContent>
+
+        {/* Observações da Casa */}
+        <TabsContent value="observacoes">
+          <div className="bg-card rounded-xl border border-border p-6">
+            {canEdit && (
+              <Button size="sm" onClick={() => openDialog("observacao", { data: new Date().toISOString().split("T")[0] })} className="mb-4 bg-gradient-gold text-primary-foreground hover:opacity-90">
+                <Plus className="w-4 h-4 mr-1" /> Nova Observação
+              </Button>
+            )}
+            {observacoes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma observação registrada.</p>
+            ) : (
+              <div className="space-y-3">
+                {observacoes.map((o) => (
+                  <div key={o.id} className="flex items-start justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-xs text-muted-foreground">{formatDate(o.data)}</p>
+                        {o.autor && <p className="text-xs text-muted-foreground">— {o.autor}</p>}
+                      </div>
+                      <p className="text-sm text-card-foreground whitespace-pre-wrap">{o.observacao}</p>
+                    </div>
+                    {canEdit && (
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive ml-2" onClick={() => handleDelete("observacao", o.id)}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Dialog para adicionar/editar registros */}
@@ -348,6 +465,7 @@ const PessoaPerfil = () => {
               {dialog.type === "coroacao" && "Nova Coroação"}
               {dialog.type === "entidade" && (dialog.editId ? "Editar Entidade" : "Nova Entidade")}
               {dialog.type === "historico" && "Novo Evento"}
+              {dialog.type === "observacao" && "Nova Observação"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -381,7 +499,19 @@ const PessoaPerfil = () => {
             )}
             {dialog.type === "coroacao" && (
               <>
-                <div><Label className="text-muted-foreground">Tipo de Coroação</Label><Input value={formFields.tipo_coroacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, tipo_coroacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div>
+                  <Label className="text-muted-foreground">Tipo de Coroação</Label>
+                  <Select value={formFields.tipo_coroacao || ""} onValueChange={(v) => setFormFields((f) => ({ ...f, tipo_coroacao: v }))}>
+                    <SelectTrigger className="bg-muted border-border mt-1">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COROACAO_TIPOS.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div><Label className="text-muted-foreground">Data da Coroação</Label><Input type="date" value={formFields.data_coroacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, data_coroacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
                 <div><Label className="text-muted-foreground">Observação</Label><Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
               </>
@@ -397,29 +527,96 @@ const PessoaPerfil = () => {
                   <Input value={formFields.nome_entidade || ""} onChange={(e) => setFormFields((f) => ({ ...f, nome_entidade: e.target.value }))} className="bg-muted border-border mt-1" />
                 </div>
                 <div>
+                  <Label className="text-muted-foreground">Data de Manifestação</Label>
+                  <Input type="date" value={formFields.data_manifestacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, data_manifestacao: e.target.value }))} className="bg-muted border-border mt-1" />
+                </div>
+                <div>
                   <Label className="text-muted-foreground">Observação</Label>
-                  <Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                {dialog.editId && canEdit && (
-                  <Button variant="destructive" size="sm" onClick={async () => {
-                    await handleDelete("entidade", dialog.editId!);
-                    setDialog({ type: "", open: false });
-                  }}>
-                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover Entidade
-                  </Button>
-                )}
+                  <Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" />
+                </div>
               </>
             )}
             {dialog.type === "historico" && (
               <>
-                <div><Label className="text-muted-foreground">Tipo de Evento</Label><Input value={formFields.tipo_evento || ""} onChange={(e) => setFormFields((f) => ({ ...f, tipo_evento: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div>
+                  <Label className="text-muted-foreground">Tipo de Evento</Label>
+                  <Select value={formFields.tipo_evento || ""} onValueChange={(v) => setFormFields((f) => ({ ...f, tipo_evento: v }))}>
+                    <SelectTrigger className="bg-muted border-border mt-1">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HISTORICO_TIPOS.map((t) => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div><Label className="text-muted-foreground">Data do Evento</Label><Input type="date" value={formFields.data_evento || ""} onChange={(e) => setFormFields((f) => ({ ...f, data_evento: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                <div><Label className="text-muted-foreground">Descrição</Label><Input value={formFields.descricao || ""} onChange={(e) => setFormFields((f) => ({ ...f, descricao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div><Label className="text-muted-foreground">Descrição</Label><Textarea value={formFields.descricao || ""} onChange={(e) => setFormFields((f) => ({ ...f, descricao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+              </>
+            )}
+            {dialog.type === "observacao" && (
+              <>
+                <div><Label className="text-muted-foreground">Data</Label><Input type="date" value={formFields.data || ""} onChange={(e) => setFormFields((f) => ({ ...f, data: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div><Label className="text-muted-foreground">Autor</Label><Input value={formFields.autor || ""} onChange={(e) => setFormFields((f) => ({ ...f, autor: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div><Label className="text-muted-foreground">Observação</Label><Textarea value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" rows={4} /></div>
               </>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog({ type: "", open: false })} className="border-border text-muted-foreground">Cancelar</Button>
             <Button onClick={handleAdd} className="bg-gradient-gold text-primary-foreground hover:opacity-90">Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de gerenciamento de entidades por linha */}
+      <Dialog open={entLinhaDialog.open} onOpenChange={(o) => setEntLinhaDialog((d) => ({ ...d, open: o }))}>
+        <DialogContent className="bg-card border-border max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-card-foreground">Entidades — {entLinhaDialog.linha}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-4 max-h-[60vh] overflow-y-auto">
+            {getEntidadesByLinha(entLinhaDialog.linha).length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma entidade registrada nesta linha.</p>
+            ) : (
+              getEntidadesByLinha(entLinhaDialog.linha).map((e) => (
+                <div key={e.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">{e.nome_entidade || "—"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(e as any).data_manifestacao ? formatDate((e as any).data_manifestacao) : ""}
+                      {e.observacao ? ` — ${e.observacao}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => {
+                      setEntLinhaDialog({ open: false, linha: "" });
+                      openDialog("entidade", {
+                        linha: entLinhaDialog.linha,
+                        nome_entidade: e.nome_entidade || "",
+                        observacao: e.observacao || "",
+                        data_manifestacao: (e as any).data_manifestacao || "",
+                      }, e.id);
+                    }}>
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete("entidade", e.id)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEntLinhaDialog({ open: false, linha: "" })} className="border-border text-muted-foreground">Fechar</Button>
+            <Button onClick={() => {
+              setEntLinhaDialog({ open: false, linha: "" });
+              openDialog("entidade", { linha: entLinhaDialog.linha });
+            }} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+              <Plus className="w-4 h-4 mr-1" /> Adicionar Entidade
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

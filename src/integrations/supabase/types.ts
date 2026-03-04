@@ -167,7 +167,9 @@ export type Database = {
       }
       entidades: {
         Row: {
+          ativa: boolean
           created_at: string
+          data_manifestacao: string | null
           id: string
           linha: string | null
           nome_entidade: string | null
@@ -175,7 +177,9 @@ export type Database = {
           pessoa_id: string
         }
         Insert: {
+          ativa?: boolean
           created_at?: string
+          data_manifestacao?: string | null
           id?: string
           linha?: string | null
           nome_entidade?: string | null
@@ -183,7 +187,9 @@ export type Database = {
           pessoa_id: string
         }
         Update: {
+          ativa?: boolean
           created_at?: string
+          data_manifestacao?: string | null
           id?: string
           linha?: string | null
           nome_entidade?: string | null
@@ -360,6 +366,41 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      observacoes_internas: {
+        Row: {
+          autor: string | null
+          created_at: string
+          data: string
+          id: string
+          observacao: string
+          pessoa_id: string
+        }
+        Insert: {
+          autor?: string | null
+          created_at?: string
+          data?: string
+          id?: string
+          observacao: string
+          pessoa_id: string
+        }
+        Update: {
+          autor?: string | null
+          created_at?: string
+          data?: string
+          id?: string
+          observacao?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observacoes_internas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
         ]

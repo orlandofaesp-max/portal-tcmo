@@ -115,18 +115,6 @@ export const useUpdateCruzamento = () => {
   });
 };
 
-export const useUpdateEntidade = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ id, pessoa_id, ...payload }: { id: string; pessoa_id: string; [key: string]: any }) => {
-      const { data, error } = await supabase.from("entidades").update(payload).eq("id", id).select().single();
-      if (error) throw error;
-      return { ...data, pessoa_id };
-    },
-    onSuccess: (d) => qc.invalidateQueries({ queryKey: ["entidades", d.pessoa_id] }),
-  });
-};
-
 export const useDeleteCruzamento = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -189,6 +177,7 @@ export const useEntidades = (pessoaId: string | undefined) =>
         .from("entidades")
         .select("*")
         .eq("pessoa_id", pessoaId!)
+        .eq("ativa", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -198,7 +187,7 @@ export const useEntidades = (pessoaId: string | undefined) =>
 export const useCreateEntidade = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { pessoa_id: string; nome_entidade?: string | null; linha?: string | null; observacao?: string | null }) => {
+    mutationFn: async (payload: { pessoa_id: string; nome_entidade?: string | null; linha?: string | null; observacao?: string | null; data_manifestacao?: string | null }) => {
       const { data, error } = await supabase.from("entidades").insert(payload).select().single();
       if (error) throw error;
       return data;
@@ -207,11 +196,24 @@ export const useCreateEntidade = () => {
   });
 };
 
+export const useUpdateEntidade = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, pessoa_id, ...payload }: { id: string; pessoa_id: string; [key: string]: any }) => {
+      const { data, error } = await supabase.from("entidades").update(payload).eq("id", id).select().single();
+      if (error) throw error;
+      return { ...data, pessoa_id };
+    },
+    onSuccess: (d) => qc.invalidateQueries({ queryKey: ["entidades", d.pessoa_id] }),
+  });
+};
+
+// Soft-delete: set ativa = false instead of physical delete
 export const useDeleteEntidade = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, pessoa_id }: { id: string; pessoa_id: string }) => {
-      const { error } = await supabase.from("entidades").delete().eq("id", id);
+      const { error } = await supabase.from("entidades").update({ ativa: false }).eq("id", id);
       if (error) throw error;
       return pessoa_id;
     },
@@ -256,5 +258,45 @@ export const useDeleteHistoricoReligioso = () => {
       return pessoa_id;
     },
     onSuccess: (pessoaId) => qc.invalidateQueries({ queryKey: ["historico_religioso", pessoaId] }),
+  });
+};
+
+// ---- Observações Internas ----
+export const useObservacoesInternas = (pessoaId: string | undefined) =>
+  useQuery({
+    queryKey: ["observacoes_internas", pessoaId],
+    enabled: !!pessoaId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("observacoes_internas")
+        .select("*")
+        .eq("pessoa_id", pessoaId!)
+        .order("data", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+export const useCreateObservacaoInterna = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { pessoa_id: string; data?: string; autor?: string | null; observacao: string }) => {
+      const { data, error } = await supabase.from("observacoes_internas").insert(payload).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["observacoes_internas", v.pessoa_id] }),
+  });
+};
+
+export const useDeleteObservacaoInterna = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, pessoa_id }: { id: string; pessoa_id: string }) => {
+      const { error } = await supabase.from("observacoes_internas").delete().eq("id", id);
+      if (error) throw error;
+      return pessoa_id;
+    },
+    onSuccess: (pessoaId) => qc.invalidateQueries({ queryKey: ["observacoes_internas", pessoaId] }),
   });
 };
