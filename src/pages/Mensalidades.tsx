@@ -3,6 +3,7 @@ import { Plus, Search, Filter, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -31,9 +32,11 @@ const Mensalidades = () => {
   const [filterStatus, setFilterStatus] = useState("todos");
   const [competenciaFilter, setCompetenciaFilter] = useState("TODOS");
   const [gerarDialog, setGerarDialog] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(false);
   const [pagDialog, setPagDialog] = useState(false);
   const [selectedMens, setSelectedMens] = useState<any>(null);
-  const [gerarForm, setGerarForm] = useState({ competencia: "", associado_id: "" });
+  const currentCompetencia = `${String(new Date().getMonth() + 1).padStart(2, "0")}/${new Date().getFullYear()}`;
+  const [gerarForm, setGerarForm] = useState({ competencia: currentCompetencia, associado_id: "" });
   const [pagForm, setPagForm] = useState({ data_pagamento: "" });
 
   // Get current year
@@ -62,11 +65,16 @@ const Mensalidades = () => {
 
   const categoriaMensalidade = categorias.find((c) => c.nome === "Mensalidade");
 
-  const handleGerar = async () => {
+  const handleGerarClick = () => {
     if (!gerarForm.competencia) {
       toast({ title: "Selecione a competência", variant: "destructive" });
       return;
     }
+    setConfirmDialog(true);
+  };
+
+  const handleGerar = async () => {
+    setConfirmDialog(false);
     try {
       const assocList = gerarForm.associado_id
         ? associados.filter((a) => a.id === gerarForm.associado_id && a.ativo)
@@ -87,9 +95,13 @@ const Mensalidades = () => {
           count++;
         }
       }
-      toast({ title: `${count} mensalidade(s) gerada(s)!` });
+      toast({ title: "Mensalidades geradas com sucesso." });
       setGerarDialog(false);
-      setGerarForm({ competencia: "", associado_id: "" });
+      setGerarForm({ competencia: currentCompetencia, associado_id: "" });
+
+      // TODO [Melhoria futura]: Após geração das mensalidades, disparar notificações
+      // automáticas para os associados via WhatsApp ou e-mail, informando sobre a
+      // mensalidade gerada e/ou próxima do vencimento.
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
@@ -249,7 +261,7 @@ const Mensalidades = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGerarDialog(false)} className="border-border text-muted-foreground">Cancelar</Button>
-            <Button onClick={handleGerar} disabled={createMens.isPending} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
+            <Button onClick={handleGerarClick} disabled={createMens.isPending} className="bg-gradient-gold text-primary-foreground hover:opacity-90">
               {createMens.isPending ? "Gerando..." : "Gerar"}
             </Button>
           </DialogFooter>
@@ -285,6 +297,24 @@ const Mensalidades = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* Confirmação de geração */}
+      <AlertDialog open={confirmDialog} onOpenChange={setConfirmDialog}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-card-foreground">Confirmar geração</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja gerar mensalidades para a competência <strong>{gerarForm.competencia}</strong>?
+              {gerarForm.associado_id
+                ? ` Para o associado selecionado.`
+                : ` Para todos os associados ativos.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border text-muted-foreground">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleGerar} className="bg-gradient-gold text-primary-foreground hover:opacity-90">Confirmar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

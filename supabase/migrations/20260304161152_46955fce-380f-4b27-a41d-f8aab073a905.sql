@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_lancamentos_associado_id ON lancamentos(associado_id);
