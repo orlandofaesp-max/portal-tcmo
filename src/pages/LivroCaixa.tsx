@@ -53,15 +53,23 @@ const LivroCaixa = () => {
   const [form, setForm] = useState<FormState>(emptyForm);
   const { toast } = useToast();
 
-  const filtered = lancamentos.filter((l) => {
+  const mesFiltrado = useMemo(() => {
+    if (mesFiltro === "TODOS") return lancamentos;
+    return lancamentos.filter((l) => {
+      const mesIdx = new Date(l.data + "T00:00:00").getMonth();
+      return meses[mesIdx] === mesFiltro;
+    });
+  }, [lancamentos, mesFiltro]);
+
+  const filtered = mesFiltrado.filter((l) => {
     const catNome = (l as any).categorias_financeiras?.nome || "";
     const obs = l.observacao || "";
     const q = search.toLowerCase();
     return catNome.toLowerCase().includes(q) || obs.toLowerCase().includes(q) || l.responsavel?.toLowerCase().includes(q);
   });
 
-  const totalEntradas = lancamentos.reduce((s, l) => s + (l.tipo === "entrada" ? l.valor : 0), 0);
-  const totalSaidas = lancamentos.reduce((s, l) => s + (l.tipo === "saida" ? l.valor : 0), 0);
+  const totalEntradas = mesFiltrado.reduce((s, l) => s + (l.tipo === "entrada" ? l.valor : 0), 0);
+  const totalSaidas = mesFiltrado.reduce((s, l) => s + (l.tipo === "saida" ? l.valor : 0), 0);
   const saldo = totalEntradas - totalSaidas;
 
   const handleSave = async () => {
