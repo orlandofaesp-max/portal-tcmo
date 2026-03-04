@@ -65,11 +65,16 @@ const Mensalidades = () => {
 
   const categoriaMensalidade = categorias.find((c) => c.nome === "Mensalidade");
 
-  const handleGerar = async () => {
+  const handleGerarClick = () => {
     if (!gerarForm.competencia) {
       toast({ title: "Selecione a competência", variant: "destructive" });
       return;
     }
+    setConfirmDialog(true);
+  };
+
+  const handleGerar = async () => {
+    setConfirmDialog(false);
     try {
       const assocList = gerarForm.associado_id
         ? associados.filter((a) => a.id === gerarForm.associado_id && a.ativo)
@@ -90,9 +95,13 @@ const Mensalidades = () => {
           count++;
         }
       }
-      toast({ title: `${count} mensalidade(s) gerada(s)!` });
+      toast({ title: "Mensalidades geradas com sucesso." });
       setGerarDialog(false);
-      setGerarForm({ competencia: "", associado_id: "" });
+      setGerarForm({ competencia: currentCompetencia, associado_id: "" });
+
+      // TODO [Melhoria futura]: Após geração das mensalidades, disparar notificações
+      // automáticas para os associados via WhatsApp ou e-mail, informando sobre a
+      // mensalidade gerada e/ou próxima do vencimento.
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
     }
