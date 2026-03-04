@@ -12,6 +12,8 @@ import Dashboard from "@/pages/Dashboard";
 import Mensalidades from "@/pages/Mensalidades";
 import LivroCaixa from "@/pages/LivroCaixa";
 import Demonstracoes from "@/pages/Demonstracoes";
+import Associados from "@/pages/tesouraria/Associados";
+import Categorias from "@/pages/tesouraria/Categorias";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
 import NotFound from "./pages/NotFound";
@@ -60,6 +62,8 @@ const ProtectedRoutes = () => {
           {/* Administração — somente congal */}
           <Route path="/admin/usuarios" element={<ModuleRoute perfil="congal"><GerenciarUsuarios /></ModuleRoute>} />
           {/* Tesouraria */}
+          <Route path="/tesouraria/associados" element={<ModuleRoute perfil="tesouraria"><Associados /></ModuleRoute>} />
+          <Route path="/tesouraria/categorias" element={<ModuleRoute perfil="tesouraria"><Categorias /></ModuleRoute>} />
           <Route path="/tesouraria/mensalidades" element={<ModuleRoute perfil="tesouraria"><Mensalidades /></ModuleRoute>} />
           <Route path="/tesouraria/livro-caixa" element={<ModuleRoute perfil="tesouraria"><LivroCaixa /></ModuleRoute>} />
           <Route path="/tesouraria/demonstracoes" element={<ModuleRoute perfil="tesouraria"><Demonstracoes /></ModuleRoute>} />
