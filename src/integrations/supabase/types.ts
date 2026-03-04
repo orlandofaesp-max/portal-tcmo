@@ -438,6 +438,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_usuarios: { Args: never; Returns: number }
       has_perfil: {
         Args: {
           _perfil: Database["public"]["Enums"]["app_perfil"]
