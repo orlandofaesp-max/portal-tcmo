@@ -20,6 +20,7 @@ interface UsuarioRow {
   user_id: string;
   nome: string;
   email: string;
+  telefone: string | null;
   perfil: AppPerfil;
   ativo: boolean;
   created_at: string;
@@ -39,14 +40,14 @@ const GerenciarUsuarios = () => {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<UsuarioRow | null>(null);
-  const [form, setForm] = useState({ nome: "", email: "", perfil: "tesouraria" as AppPerfil, senha: "" });
+  const [form, setForm] = useState({ nome: "", email: "", perfil: "tesouraria" as AppPerfil, senha: "", telefone: "" });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
   const { isCongal } = useAuth();
 
   const fetchUsuarios = async () => {
     const { data } = await supabase.from("usuarios").select("*").order("nome");
-    if (data) setUsuarios(data);
+    if (data) setUsuarios(data as UsuarioRow[]);
   };
 
   useEffect(() => { fetchUsuarios(); }, []);
@@ -63,7 +64,7 @@ const GerenciarUsuarios = () => {
     if (editing) {
       const { error } = await supabase
         .from("usuarios")
-        .update({ nome: form.nome, email: form.email, perfil: form.perfil })
+        .update({ nome: form.nome, email: form.email, perfil: form.perfil, telefone: form.telefone || null })
         .eq("id", editing.id);
       if (error) {
         toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
@@ -71,7 +72,6 @@ const GerenciarUsuarios = () => {
         toast({ title: "Usuário atualizado!" });
       }
     } else {
-      // Create auth user first, then insert into usuarios
       if (!form.senha || form.senha.length < 6) {
         toast({ title: "Senha deve ter pelo menos 6 caracteres", variant: "destructive" });
         setSaving(false);
@@ -94,6 +94,7 @@ const GerenciarUsuarios = () => {
         nome: form.nome,
         email: form.email,
         perfil: form.perfil,
+        telefone: form.telefone || null,
       });
 
       if (error) {
@@ -106,7 +107,7 @@ const GerenciarUsuarios = () => {
     setSaving(false);
     setDialogOpen(false);
     setEditing(null);
-    setForm({ nome: "", email: "", perfil: "tesouraria", senha: "" });
+    setForm({ nome: "", email: "", perfil: "tesouraria", senha: "", telefone: "" });
     fetchUsuarios();
   };
 
@@ -118,7 +119,7 @@ const GerenciarUsuarios = () => {
 
   const handleEdit = (u: UsuarioRow) => {
     setEditing(u);
-    setForm({ nome: u.nome, email: u.email, perfil: u.perfil, senha: "" });
+    setForm({ nome: u.nome, email: u.email, perfil: u.perfil, senha: "", telefone: u.telefone || "" });
     setDialogOpen(true);
   };
 
@@ -140,7 +141,7 @@ const GerenciarUsuarios = () => {
     <div>
       <PageHeader title="Gerenciar Usuários" subtitle="Cadastro e controle de acesso ao portal">
         <Button
-          onClick={() => { setEditing(null); setForm({ nome: "", email: "", perfil: "tesouraria", senha: "" }); setDialogOpen(true); }}
+          onClick={() => { setEditing(null); setForm({ nome: "", email: "", perfil: "tesouraria", senha: "", telefone: "" }); setDialogOpen(true); }}
           className="bg-gradient-gold text-primary-foreground hover:opacity-90"
         >
           <Plus className="w-4 h-4 mr-2" /> Novo Usuário
@@ -159,6 +160,7 @@ const GerenciarUsuarios = () => {
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Nome</th>
                 <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Email</th>
+                <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Telefone</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Perfil</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-3 py-3">Status</th>
                 <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3">Ações</th>
@@ -169,6 +171,7 @@ const GerenciarUsuarios = () => {
                 <tr key={u.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3 text-sm font-medium text-card-foreground">{u.nome}</td>
                   <td className="px-5 py-3 text-sm text-muted-foreground">{u.email}</td>
+                  <td className="px-5 py-3 text-sm text-muted-foreground">{u.telefone || "—"}</td>
                   <td className="px-3 py-3 text-center">
                     <span className="text-[10px] font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
                       {perfilLabels[u.perfil]}
@@ -197,7 +200,7 @@ const GerenciarUsuarios = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-muted-foreground">Nenhum usuário encontrado.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-muted-foreground">Nenhum usuário encontrado.</td></tr>
               )}
             </tbody>
           </table>
@@ -224,6 +227,10 @@ const GerenciarUsuarios = () => {
                 <Input type="password" value={form.senha} onChange={(e) => setForm(p => ({ ...p, senha: e.target.value }))} className="bg-muted border-border mt-1" placeholder="Mín. 6 caracteres" />
               </div>
             )}
+            <div>
+              <Label className="text-muted-foreground">Telefone</Label>
+              <Input value={form.telefone} onChange={(e) => setForm(p => ({ ...p, telefone: e.target.value }))} className="bg-muted border-border mt-1" placeholder="Opcional" />
+            </div>
             <div>
               <Label className="text-muted-foreground">Perfil</Label>
               <Select value={form.perfil} onValueChange={(v) => setForm(p => ({ ...p, perfil: v as AppPerfil }))}>
