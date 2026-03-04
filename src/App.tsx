@@ -17,6 +17,10 @@ import Categorias from "@/pages/tesouraria/Categorias";
 import ExtratoAssociado from "@/pages/tesouraria/ExtratoAssociado";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
 import PlaceholderModule from "@/pages/PlaceholderModule";
+import AlmoxarifadoDashboard from "@/pages/almoxarifado/AlmoxarifadoDashboard";
+import ItensAlmoxarifado from "@/pages/almoxarifado/ItensAlmoxarifado";
+import CategoriasAlmoxarifado from "@/pages/almoxarifado/CategoriasAlmoxarifado";
+import MovimentacoesAlmoxarifado from "@/pages/almoxarifado/Movimentacoes";
 import Pessoas from "@/pages/secretaria/Pessoas";
 import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
 import FundoReserva from "@/pages/tesouraria/FundoReserva";
@@ -88,7 +92,10 @@ const ProtectedRoutes = () => {
           <Route path="/biblioteca/categorias" element={<ModuleRoute perfil="biblioteca"><CategoriasBibliotecaPage /></ModuleRoute>} />
           <Route path="/biblioteca/emprestimos" element={<ModuleRoute perfil="biblioteca"><EmprestimosPage /></ModuleRoute>} />
           {/* Almoxarifado */}
-          <Route path="/almoxarifado" element={<ModuleRoute perfil="almoxarifado"><PlaceholderModule title="Almoxarifado" description="Controle de estoque e mercadorias" /></ModuleRoute>} />
+          <Route path="/almoxarifado/dashboard" element={<ModuleRoute perfil="almoxarifado"><AlmoxarifadoDashboard /></ModuleRoute>} />
+          <Route path="/almoxarifado/itens" element={<ModuleRoute perfil="almoxarifado"><ItensAlmoxarifado /></ModuleRoute>} />
+          <Route path="/almoxarifado/categorias" element={<ModuleRoute perfil="almoxarifado"><CategoriasAlmoxarifado /></ModuleRoute>} />
+          <Route path="/almoxarifado/movimentacoes" element={<ModuleRoute perfil="almoxarifado"><MovimentacoesAlmoxarifado /></ModuleRoute>} />
           {/* Acervo */}
           <Route path="/acervo" element={<ModuleRoute perfil="acervo"><PlaceholderModule title="Acervo Histórico" description="Preservação do patrimônio histórico e cultural" /></ModuleRoute>} />
           {/* Legacy redirects */}

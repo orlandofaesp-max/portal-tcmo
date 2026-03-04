@@ -67,7 +67,10 @@ const modules = [
     perfil: "almoxarifado" as const,
     icon: Package,
     items: [
-      { to: "/almoxarifado", icon: Package, label: "Almoxarifado" },
+      { to: "/almoxarifado/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/almoxarifado/itens", icon: Package, label: "Itens" },
+      { to: "/almoxarifado/categorias", icon: Tag, label: "Categorias" },
+      { to: "/almoxarifado/movimentacoes", icon: ClipboardList, label: "Movimentações" },
     ],
   },
   {
