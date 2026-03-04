@@ -14,6 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
+      associados: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          mensalidade_valor: number
+          nome: string
+          numero: string | null
+          saldo_anterior: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          mensalidade_valor?: number
+          nome: string
+          numero?: string | null
+          saldo_anterior?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          mensalidade_valor?: number
+          nome?: string
+          numero?: string | null
+          saldo_anterior?: number
+        }
+        Relationships: []
+      }
+      categorias_financeiras: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          id: string
+          nome: string
+          tipo: Database["public"]["Enums"]["tipo_financeiro"]
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome: string
+          tipo: Database["public"]["Enums"]["tipo_financeiro"]
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          tipo?: Database["public"]["Enums"]["tipo_financeiro"]
+        }
+        Relationships: []
+      }
+      configuracoes: {
+        Row: {
+          chave: string
+          id: string
+          valor: string
+        }
+        Insert: {
+          chave: string
+          id?: string
+          valor: string
+        }
+        Update: {
+          chave?: string
+          id?: string
+          valor?: string
+        }
+        Relationships: []
+      }
+      lancamentos: {
+        Row: {
+          associado_id: string | null
+          categoria_id: string
+          created_at: string
+          data: string
+          id: string
+          observacao: string | null
+          origem: Database["public"]["Enums"]["origem_lancamento"]
+          responsavel: string | null
+          tipo: Database["public"]["Enums"]["tipo_financeiro"]
+          valor: number
+        }
+        Insert: {
+          associado_id?: string | null
+          categoria_id: string
+          created_at?: string
+          data: string
+          id?: string
+          observacao?: string | null
+          origem?: Database["public"]["Enums"]["origem_lancamento"]
+          responsavel?: string | null
+          tipo: Database["public"]["Enums"]["tipo_financeiro"]
+          valor: number
+        }
+        Update: {
+          associado_id?: string | null
+          categoria_id?: string
+          created_at?: string
+          data?: string
+          id?: string
+          observacao?: string | null
+          origem?: Database["public"]["Enums"]["origem_lancamento"]
+          responsavel?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_financeiro"]
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lancamentos_associado_id_fkey"
+            columns: ["associado_id"]
+            isOneToOne: false
+            referencedRelation: "associados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lancamentos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_financeiras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensalidades: {
+        Row: {
+          associado_id: string
+          competencia: string
+          created_at: string
+          data_pagamento: string | null
+          id: string
+          lancamento_id: string | null
+          status: Database["public"]["Enums"]["status_mensalidade"]
+          valor: number
+        }
+        Insert: {
+          associado_id: string
+          competencia: string
+          created_at?: string
+          data_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          status?: Database["public"]["Enums"]["status_mensalidade"]
+          valor: number
+        }
+        Update: {
+          associado_id?: string
+          competencia?: string
+          created_at?: string
+          data_pagamento?: string | null
+          id?: string
+          lancamento_id?: string | null
+          status?: Database["public"]["Enums"]["status_mensalidade"]
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensalidades_associado_id_fkey"
+            columns: ["associado_id"]
+            isOneToOne: false
+            referencedRelation: "associados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensalidades_lancamento_id_fkey"
+            columns: ["lancamento_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis: {
         Row: {
           created_at: string
@@ -93,6 +267,9 @@ export type Database = {
         | "biblioteca"
         | "almoxarifado"
         | "acervo"
+      origem_lancamento: "manual" | "extrato"
+      status_mensalidade: "pago" | "em_aberto"
+      tipo_financeiro: "entrada" | "saida"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -228,6 +405,9 @@ export const Constants = {
         "almoxarifado",
         "acervo",
       ],
+      origem_lancamento: ["manual", "extrato"],
+      status_mensalidade: ["pago", "em_aberto"],
+      tipo_financeiro: ["entrada", "saida"],
     },
   },
 } as const
