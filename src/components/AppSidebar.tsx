@@ -55,7 +55,11 @@ const modules = [
     perfil: "biblioteca" as const,
     icon: Library,
     items: [
-      { to: "/biblioteca", icon: Library, label: "Biblioteca" },
+      { to: "/biblioteca/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/biblioteca/obras", icon: BookOpen, label: "Obras" },
+      { to: "/biblioteca/autores", icon: Users, label: "Autores" },
+      { to: "/biblioteca/categorias", icon: Tag, label: "Categorias" },
+      { to: "/biblioteca/emprestimos", icon: ClipboardList, label: "Empréstimos" },
     ],
   },
   {
