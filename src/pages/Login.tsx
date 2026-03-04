@@ -38,7 +38,7 @@ const Login = () => {
     setLoading(true);
 
     if (isSetup) {
-      // First user setup — create auth + usuario with congal profile
+      // First user setup — trigger will auto-create usuario with congal profile
       if (!nome.trim() || password.length < 6) {
         setError("Preencha todos os campos. Senha mín. 6 caracteres.");
         setLoading(false);
@@ -47,28 +47,24 @@ const Login = () => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { nome: nome.trim() },
+        },
       });
       if (authError || !authData.user) {
         setError(authError?.message || "Erro ao criar conta.");
         setLoading(false);
         return;
       }
-      const { error: insertError } = await supabase.from("usuarios").insert({
-        user_id: authData.user.id,
-        nome: nome.trim(),
-        email,
-        perfil: "congal",
-      });
-      if (insertError) {
-        setError(insertError.message);
-        setLoading(false);
-        return;
-      }
-      // Auto sign in
-      await signIn(email, password);
+      // Try to sign in (works if auto-confirm is on or email already confirmed)
+      const { error: signInError } = await signIn(email, password);
       setLoading(false);
-      navigate("/");
+      if (signInError) {
+        setError("Conta criada! Verifique seu email para confirmar e depois faça login.");
+      } else {
+        navigate("/");
+      }
     } else {
       const { error } = await signIn(email, password);
       setLoading(false);
