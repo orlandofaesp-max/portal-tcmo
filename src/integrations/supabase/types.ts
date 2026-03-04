@@ -132,6 +132,7 @@ export type Database = {
           linha: string | null
           observacao: string | null
           pessoa_id: string
+          serie: string | null
           titulo: string
         }
         Insert: {
@@ -141,6 +142,7 @@ export type Database = {
           linha?: string | null
           observacao?: string | null
           pessoa_id: string
+          serie?: string | null
           titulo?: string
         }
         Update: {
@@ -150,6 +152,7 @@ export type Database = {
           linha?: string | null
           observacao?: string | null
           pessoa_id?: string
+          serie?: string | null
           titulo?: string
         }
         Relationships: [

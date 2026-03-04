@@ -1,0 +1,1 @@
+ALTER TABLE public.cruzamentos ADD COLUMN serie text;
