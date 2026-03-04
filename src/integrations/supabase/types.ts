@@ -65,6 +65,27 @@ export type Database = {
         }
         Relationships: []
       }
+      categorias_almoxarifado: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       categorias_biblioteca: {
         Row: {
           created_at: string
@@ -396,6 +417,44 @@ export type Database = {
           },
         ]
       }
+      itens_almoxarifado: {
+        Row: {
+          ativo: boolean
+          categoria_id: string
+          created_at: string
+          estoque_minimo: number
+          id: string
+          nome: string
+          unidade_medida: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria_id: string
+          created_at?: string
+          estoque_minimo?: number
+          id?: string
+          nome: string
+          unidade_medida: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria_id?: string
+          created_at?: string
+          estoque_minimo?: number
+          id?: string
+          nome?: string
+          unidade_medida?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itens_almoxarifado_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_almoxarifado"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lancamentos: {
         Row: {
           associado_id: string | null
@@ -494,6 +553,54 @@ export type Database = {
             columns: ["lancamento_id"]
             isOneToOne: false
             referencedRelation: "lancamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      movimentacoes_almoxarifado: {
+        Row: {
+          created_at: string
+          data_movimento: string
+          id: string
+          item_id: string
+          observacao: string | null
+          pessoa_id: string
+          quantidade: number
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          data_movimento?: string
+          id?: string
+          item_id: string
+          observacao?: string | null
+          pessoa_id: string
+          quantidade: number
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          data_movimento?: string
+          id?: string
+          item_id?: string
+          observacao?: string | null
+          pessoa_id?: string
+          quantidade?: number
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_almoxarifado_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "itens_almoxarifado"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimentacoes_almoxarifado_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
         ]
