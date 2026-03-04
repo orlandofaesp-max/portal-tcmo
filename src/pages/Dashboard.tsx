@@ -21,7 +21,7 @@ import {
 import StatCard from "@/components/StatCard";
 import PageHeader from "@/components/PageHeader";
 import MonthFilter from "@/components/MonthFilter";
-import { useLancamentos, useMensalidades, useAssociados, formatCurrency, meses } from "@/hooks/useFinanceiro";
+import { useLancamentos, useMensalidades, useFundoReserva, formatCurrency, meses } from "@/hooks/useFinanceiro";
 
 const COLORS_PIE = ["hsl(var(--primary))", "hsl(var(--success))"];
 
