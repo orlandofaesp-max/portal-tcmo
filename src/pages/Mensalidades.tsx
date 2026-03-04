@@ -104,7 +104,7 @@ const Mensalidades = () => {
       // Create lancamento
       let lancamento_id: string | null = null;
       if (categoriaMensalidade) {
-        const { data: lanc } = await createLanc.mutateAsync({
+        const lanc = await createLanc.mutateAsync({
           data: pagForm.data_pagamento,
           tipo: "entrada",
           valor: selectedMens.valor,
@@ -113,7 +113,7 @@ const Mensalidades = () => {
           origem: "manual",
           observacao: `Mensalidade ${selectedMens.competencia} - ${(selectedMens as any).associados?.nome || ""}`,
         });
-        lancamento_id = lanc?.id || null;
+        lancamento_id = (lanc as any)?.id || null;
       }
 
       await updateMens.mutateAsync({
