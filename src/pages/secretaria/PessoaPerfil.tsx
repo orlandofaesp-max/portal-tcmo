@@ -5,19 +5,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   usePessoa,
-  useCruzamentos, useCreateCruzamento, useDeleteCruzamento,
+  useCruzamentos, useCreateCruzamento, useUpdateCruzamento, useDeleteCruzamento,
   useCoroacoes, useCreateCoroacao, useDeleteCoroacao,
-  useEntidades, useCreateEntidade, useDeleteEntidade,
+  useEntidades, useCreateEntidade, useUpdateEntidade, useDeleteEntidade,
   useHistoricoReligioso, useCreateHistoricoReligioso, useDeleteHistoricoReligioso,
 } from "@/hooks/useSecretaria";
 import { useState } from "react";
 import { format } from "date-fns";
 
 const formatDate = (d: string | null) => (d ? format(new Date(d), "dd/MM/yyyy") : "—");
+
+const CRUZAMENTO_LINHAS = [
+  "Amassi Niori (Orixá Individual)",
+  "Oxum",
+  "Ogum",
+  "Iemanjá",
+  "Cosme e Damião",
+  "Preto Velho",
+];
+
+const CRUZAMENTO_SERIES = [
+  { value: "1", label: "1ª Série" },
+  { value: "2", label: "2ª Série" },
+  { value: "3", label: "3ª Série" },
+  { value: "4", label: "4ª Série" },
+  { value: "5", label: "5ª Série" },
+  { value: "6", label: "6ª Série" },
+  { value: "7", label: "7ª Série" },
+  { value: "dependencia", label: "Dependência" },
+];
+
+const ENTIDADE_LINHAS = [
+  "Preto Velho",
+  "Caboclo",
+  "Erê",
+  "Guardião",
+  "Linha Auxiliar",
+  "Linha Oriente",
+];
 
 const PessoaPerfil = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,21 +62,23 @@ const PessoaPerfil = () => {
   const { data: historico = [] } = useHistoricoReligioso(id);
 
   const createCruz = useCreateCruzamento();
+  const updateCruz = useUpdateCruzamento();
   const deleteCruz = useDeleteCruzamento();
   const createCor = useCreateCoroacao();
   const deleteCor = useDeleteCoroacao();
   const createEnt = useCreateEntidade();
+  const updateEnt = useUpdateEntidade();
   const deleteEnt = useDeleteEntidade();
   const createHist = useCreateHistoricoReligioso();
   const deleteHist = useDeleteHistoricoReligioso();
 
   // Dialog state
-  const [dialog, setDialog] = useState<{ type: string; open: boolean }>({ type: "", open: false });
+  const [dialog, setDialog] = useState<{ type: string; open: boolean; editId?: string }>({ type: "", open: false });
   const [formFields, setFormFields] = useState<Record<string, string>>({});
 
-  const openDialog = (type: string) => {
-    setFormFields({});
-    setDialog({ type, open: true });
+  const openDialog = (type: string, prefill?: Record<string, string>, editId?: string) => {
+    setFormFields(prefill || {});
+    setDialog({ type, open: true, editId });
   };
 
   const handleAdd = async () => {
@@ -54,19 +86,27 @@ const PessoaPerfil = () => {
     try {
       switch (dialog.type) {
         case "cruzamento":
-          await createCruz.mutateAsync({ pessoa_id: id, linha: formFields.linha || null, data_cruzamento: formFields.data_cruzamento || null, observacao: formFields.observacao || null });
+          if (dialog.editId) {
+            await updateCruz.mutateAsync({ id: dialog.editId, pessoa_id: id, data_cruzamento: formFields.data_cruzamento || null, observacao: formFields.observacao || null });
+          } else {
+            await createCruz.mutateAsync({ pessoa_id: id, linha: formFields.linha || null, serie: formFields.serie || null, data_cruzamento: formFields.data_cruzamento || null, observacao: formFields.observacao || null });
+          }
           break;
         case "coroacao":
           await createCor.mutateAsync({ pessoa_id: id, tipo_coroacao: formFields.tipo_coroacao || null, data_coroacao: formFields.data_coroacao || null, observacao: formFields.observacao || null });
           break;
         case "entidade":
-          await createEnt.mutateAsync({ pessoa_id: id, nome_entidade: formFields.nome_entidade || null, linha: formFields.linha || null, observacao: formFields.observacao || null });
+          if (dialog.editId) {
+            await updateEnt.mutateAsync({ id: dialog.editId, pessoa_id: id, nome_entidade: formFields.nome_entidade || null, observacao: formFields.observacao || null });
+          } else {
+            await createEnt.mutateAsync({ pessoa_id: id, nome_entidade: formFields.nome_entidade || null, linha: formFields.linha || null, observacao: formFields.observacao || null });
+          }
           break;
         case "historico":
           await createHist.mutateAsync({ pessoa_id: id, tipo_evento: formFields.tipo_evento || null, data_evento: formFields.data_evento || null, descricao: formFields.descricao || null });
           break;
       }
-      toast({ title: "Registro adicionado!" });
+      toast({ title: dialog.editId ? "Registro atualizado!" : "Registro adicionado!" });
       setDialog({ type: "", open: false });
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
@@ -85,6 +125,43 @@ const PessoaPerfil = () => {
       toast({ title: "Registro removido!" });
     } catch (e: any) {
       toast({ title: "Erro", description: e.message, variant: "destructive" });
+    }
+  };
+
+  // --- Cruzamentos Grid helpers ---
+  const getCruzamento = (linha: string, serie: string) =>
+    cruzamentos.find((c) => c.linha === linha && (c as any).serie === serie);
+
+  const handleCruzCellClick = (linha: string, serie: string) => {
+    if (!canEdit) return;
+    const existing = getCruzamento(linha, serie);
+    if (existing) {
+      openDialog("cruzamento", {
+        linha,
+        serie,
+        data_cruzamento: existing.data_cruzamento || "",
+        observacao: existing.observacao || "",
+      }, existing.id);
+    } else {
+      openDialog("cruzamento", { linha, serie });
+    }
+  };
+
+  // --- Entidades Grid helpers ---
+  const getEntidade = (linha: string) =>
+    entidades.find((e) => e.linha === linha);
+
+  const handleEntCellClick = (linha: string) => {
+    if (!canEdit) return;
+    const existing = getEntidade(linha);
+    if (existing) {
+      openDialog("entidade", {
+        linha,
+        nome_entidade: existing.nome_entidade || "",
+        observacao: existing.observacao || "",
+      }, existing.id);
+    } else {
+      openDialog("entidade", { linha });
     }
   };
 
@@ -133,33 +210,39 @@ const PessoaPerfil = () => {
           </div>
         </TabsContent>
 
-        {/* Cruzamentos */}
+        {/* Cruzamentos - Grid */}
         <TabsContent value="cruzamentos">
-          <div className="bg-card rounded-xl border border-border p-6">
-            {canEdit && (
-              <Button size="sm" onClick={() => openDialog("cruzamento")} className="mb-4 bg-gradient-gold text-primary-foreground hover:opacity-90">
-                <Plus className="w-4 h-4 mr-1" /> Novo Cruzamento
-              </Button>
-            )}
-            {cruzamentos.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhum cruzamento registrado.</p>
-            ) : (
-              <div className="space-y-3">
-                {cruzamentos.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <div>
-                      <p className="text-sm font-medium text-card-foreground">{c.linha || "—"}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(c.data_cruzamento)}{c.observacao ? ` — ${c.observacao}` : ""}</p>
-                    </div>
-                    {canEdit && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete("cruzamento", c.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </div>
+          <div className="bg-card rounded-xl border border-border p-6 overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left p-2 text-muted-foreground font-medium">Linha</th>
+                  {CRUZAMENTO_SERIES.map((s) => (
+                    <th key={s.value} className="text-center p-2 text-muted-foreground font-medium whitespace-nowrap">{s.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {CRUZAMENTO_LINHAS.map((linha) => (
+                  <tr key={linha} className="border-b border-border/50">
+                    <td className="p-2 text-card-foreground font-medium whitespace-nowrap">{linha}</td>
+                    {CRUZAMENTO_SERIES.map((s) => {
+                      const cruz = getCruzamento(linha, s.value);
+                      return (
+                        <td
+                          key={s.value}
+                          className={`p-2 text-center text-xs ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${cruz ? "text-card-foreground" : "text-muted-foreground/40"}`}
+                          onClick={() => handleCruzCellClick(linha, s.value)}
+                          title={canEdit ? (cruz ? "Clique para editar" : "Clique para adicionar") : undefined}
+                        >
+                          {cruz ? formatDate(cruz.data_cruzamento) : "—"}
+                        </td>
+                      );
+                    })}
+                  </tr>
                 ))}
-              </div>
-            )}
+              </tbody>
+            </table>
           </div>
         </TabsContent>
 
@@ -193,33 +276,35 @@ const PessoaPerfil = () => {
           </div>
         </TabsContent>
 
-        {/* Entidades */}
+        {/* Entidades - Grid */}
         <TabsContent value="entidades">
-          <div className="bg-card rounded-xl border border-border p-6">
-            {canEdit && (
-              <Button size="sm" onClick={() => openDialog("entidade")} className="mb-4 bg-gradient-gold text-primary-foreground hover:opacity-90">
-                <Plus className="w-4 h-4 mr-1" /> Nova Entidade
-              </Button>
-            )}
-            {entidades.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nenhuma entidade registrada.</p>
-            ) : (
-              <div className="space-y-3">
-                {entidades.map((e) => (
-                  <div key={e.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                    <div>
-                      <p className="text-sm font-medium text-card-foreground">{e.nome_entidade || "—"}</p>
-                      <p className="text-xs text-muted-foreground">{e.linha || ""}{e.observacao ? ` — ${e.observacao}` : ""}</p>
-                    </div>
-                    {canEdit && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleDelete("entidade", e.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          <div className="bg-card rounded-xl border border-border p-6 overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-border">
+                  {ENTIDADE_LINHAS.map((l) => (
+                    <th key={l} className="text-center p-2 text-muted-foreground font-medium whitespace-nowrap">{l}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {ENTIDADE_LINHAS.map((linha) => {
+                    const ent = getEntidade(linha);
+                    return (
+                      <td
+                        key={linha}
+                        className={`p-3 text-center text-sm ${canEdit ? "cursor-pointer hover:bg-muted/50" : ""} ${ent ? "text-card-foreground font-medium" : "text-muted-foreground/40"}`}
+                        onClick={() => handleEntCellClick(linha)}
+                        title={canEdit ? (ent ? "Clique para editar" : "Clique para adicionar") : undefined}
+                      >
+                        {ent ? (ent.nome_entidade || "—") : "—"}
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
           </div>
         </TabsContent>
 
@@ -254,23 +339,44 @@ const PessoaPerfil = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Dialog genérico para adicionar registros */}
+      {/* Dialog para adicionar/editar registros */}
       <Dialog open={dialog.open} onOpenChange={(o) => setDialog((d) => ({ ...d, open: o }))}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle className="text-card-foreground">
-              {dialog.type === "cruzamento" && "Novo Cruzamento"}
+              {dialog.type === "cruzamento" && (dialog.editId ? "Editar Cruzamento" : "Novo Cruzamento")}
               {dialog.type === "coroacao" && "Nova Coroação"}
-              {dialog.type === "entidade" && "Nova Entidade"}
+              {dialog.type === "entidade" && (dialog.editId ? "Editar Entidade" : "Nova Entidade")}
               {dialog.type === "historico" && "Novo Evento"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {dialog.type === "cruzamento" && (
               <>
-                <div><Label className="text-muted-foreground">Linha</Label><Input value={formFields.linha || ""} onChange={(e) => setFormFields((f) => ({ ...f, linha: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                <div><Label className="text-muted-foreground">Data do Cruzamento</Label><Input type="date" value={formFields.data_cruzamento || ""} onChange={(e) => setFormFields((f) => ({ ...f, data_cruzamento: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                <div><Label className="text-muted-foreground">Observação</Label><Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div>
+                  <Label className="text-muted-foreground">Linha</Label>
+                  <Input value={formFields.linha || ""} disabled className="bg-muted border-border mt-1" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Série</Label>
+                  <Input value={CRUZAMENTO_SERIES.find(s => s.value === formFields.serie)?.label || formFields.serie || ""} disabled className="bg-muted border-border mt-1" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Data do Cruzamento</Label>
+                  <Input type="date" value={formFields.data_cruzamento || ""} onChange={(e) => setFormFields((f) => ({ ...f, data_cruzamento: e.target.value }))} className="bg-muted border-border mt-1" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Observação</Label>
+                  <Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" />
+                </div>
+                {dialog.editId && canEdit && (
+                  <Button variant="destructive" size="sm" onClick={async () => {
+                    await handleDelete("cruzamento", dialog.editId!);
+                    setDialog({ type: "", open: false });
+                  }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover Cruzamento
+                  </Button>
+                )}
               </>
             )}
             {dialog.type === "coroacao" && (
@@ -282,9 +388,25 @@ const PessoaPerfil = () => {
             )}
             {dialog.type === "entidade" && (
               <>
-                <div><Label className="text-muted-foreground">Nome da Entidade</Label><Input value={formFields.nome_entidade || ""} onChange={(e) => setFormFields((f) => ({ ...f, nome_entidade: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                <div><Label className="text-muted-foreground">Linha</Label><Input value={formFields.linha || ""} onChange={(e) => setFormFields((f) => ({ ...f, linha: e.target.value }))} className="bg-muted border-border mt-1" /></div>
-                <div><Label className="text-muted-foreground">Observação</Label><Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                <div>
+                  <Label className="text-muted-foreground">Linha</Label>
+                  <Input value={formFields.linha || ""} disabled className="bg-muted border-border mt-1" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Nome da Entidade</Label>
+                  <Input value={formFields.nome_entidade || ""} onChange={(e) => setFormFields((f) => ({ ...f, nome_entidade: e.target.value }))} className="bg-muted border-border mt-1" />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Observação</Label>
+                  <Input value={formFields.observacao || ""} onChange={(e) => setFormFields((f) => ({ ...f, observacao: e.target.value }))} className="bg-muted border-border mt-1" /></div>
+                {dialog.editId && canEdit && (
+                  <Button variant="destructive" size="sm" onClick={async () => {
+                    await handleDelete("entidade", dialog.editId!);
+                    setDialog({ type: "", open: false });
+                  }}>
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Remover Entidade
+                  </Button>
+                )}
               </>
             )}
             {dialog.type === "historico" && (
