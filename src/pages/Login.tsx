@@ -23,10 +23,9 @@ const Login = () => {
   }, [session]);
 
   useEffect(() => {
-    // Check if any users exist
     const check = async () => {
-      const { count } = await supabase.from("usuarios").select("*", { count: "exact", head: true });
-      setIsSetup(count === 0);
+      const { data } = await supabase.rpc("count_usuarios");
+      setIsSetup(data === 0);
       setCheckingSetup(false);
     };
     check();
