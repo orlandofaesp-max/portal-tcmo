@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      arquivos_acervo: {
+        Row: {
+          created_at: string
+          id: string
+          nome_arquivo: string
+          registro_id: string
+          tamanho: number | null
+          tipo_arquivo: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome_arquivo: string
+          registro_id: string
+          tamanho?: number | null
+          tipo_arquivo?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome_arquivo?: string
+          registro_id?: string
+          tamanho?: number | null
+          tipo_arquivo?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arquivos_acervo_registro_id_fkey"
+            columns: ["registro_id"]
+            isOneToOne: false
+            referencedRelation: "registros_acervo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       associados: {
         Row: {
           ativo: boolean
@@ -45,6 +83,27 @@ export type Database = {
         Relationships: []
       }
       autores: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      categorias_acervo: {
         Row: {
           created_at: string
           descricao: string | null
@@ -316,6 +375,41 @@ export type Database = {
             columns: ["pessoa_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_historicos: {
+        Row: {
+          created_at: string
+          data_evento: string
+          descricao: string | null
+          id: string
+          registro_id: string | null
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          data_evento: string
+          descricao?: string | null
+          id?: string
+          registro_id?: string | null
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          data_evento?: string
+          descricao?: string | null
+          id?: string
+          registro_id?: string | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_historicos_registro_id_fkey"
+            columns: ["registro_id"]
+            isOneToOne: false
+            referencedRelation: "registros_acervo"
             referencedColumns: ["id"]
           },
         ]
@@ -750,6 +844,64 @@ export type Database = {
           tipo_vinculo?: string | null
         }
         Relationships: []
+      }
+      registros_acervo: {
+        Row: {
+          categoria_id: string | null
+          created_at: string
+          criado_por: string | null
+          data_evento: string | null
+          descricao: string | null
+          id: string
+          pessoa_id: string | null
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          categoria_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_evento?: string | null
+          descricao?: string | null
+          id?: string
+          pessoa_id?: string | null
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          categoria_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_evento?: string | null
+          descricao?: string | null
+          id?: string
+          pessoa_id?: string | null
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registros_acervo_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_acervo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registros_acervo_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registros_acervo_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usuarios: {
         Row: {

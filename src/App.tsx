@@ -16,7 +16,10 @@ import Associados from "@/pages/tesouraria/Associados";
 import Categorias from "@/pages/tesouraria/Categorias";
 import ExtratoAssociado from "@/pages/tesouraria/ExtratoAssociado";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
-import PlaceholderModule from "@/pages/PlaceholderModule";
+import AcervoDashboard from "@/pages/acervo/AcervoDashboard";
+import RegistrosAcervo from "@/pages/acervo/RegistrosAcervo";
+import RegistroDetalhe from "@/pages/acervo/RegistroDetalhe";
+import EventosHistoricos from "@/pages/acervo/EventosHistoricos";
 import AlmoxarifadoDashboard from "@/pages/almoxarifado/AlmoxarifadoDashboard";
 import ItensAlmoxarifado from "@/pages/almoxarifado/ItensAlmoxarifado";
 import CategoriasAlmoxarifado from "@/pages/almoxarifado/CategoriasAlmoxarifado";
@@ -97,7 +100,10 @@ const ProtectedRoutes = () => {
           <Route path="/almoxarifado/categorias" element={<ModuleRoute perfil="almoxarifado"><CategoriasAlmoxarifado /></ModuleRoute>} />
           <Route path="/almoxarifado/movimentacoes" element={<ModuleRoute perfil="almoxarifado"><MovimentacoesAlmoxarifado /></ModuleRoute>} />
           {/* Acervo */}
-          <Route path="/acervo" element={<ModuleRoute perfil="acervo"><PlaceholderModule title="Acervo Histórico" description="Preservação do patrimônio histórico e cultural" /></ModuleRoute>} />
+          <Route path="/acervo/dashboard" element={<ModuleRoute perfil="acervo"><AcervoDashboard /></ModuleRoute>} />
+          <Route path="/acervo/registros" element={<ModuleRoute perfil="acervo"><RegistrosAcervo /></ModuleRoute>} />
+          <Route path="/acervo/registros/:id" element={<ModuleRoute perfil="acervo"><RegistroDetalhe /></ModuleRoute>} />
+          <Route path="/acervo/eventos" element={<ModuleRoute perfil="acervo"><EventosHistoricos /></ModuleRoute>} />
           {/* Legacy redirects */}
           <Route path="/mensalidades" element={<Navigate to="/tesouraria/mensalidades" replace />} />
           <Route path="/livro-caixa" element={<Navigate to="/tesouraria/livro-caixa" replace />} />
