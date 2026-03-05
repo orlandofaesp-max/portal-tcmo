@@ -78,7 +78,9 @@ const modules = [
     perfil: "acervo" as const,
     icon: Archive,
     items: [
-      { to: "/acervo", icon: Archive, label: "Acervo" },
+      { to: "/acervo/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/acervo/registros", icon: Archive, label: "Registros" },
+      { to: "/acervo/eventos", icon: ClipboardList, label: "Eventos" },
     ],
   },
 ];
