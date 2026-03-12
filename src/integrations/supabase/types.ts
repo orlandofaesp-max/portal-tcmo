@@ -82,6 +82,53 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          dados_anteriores: Json | null
+          dados_novos: Json | null
+          data_evento: string
+          funcionalidade: string | null
+          id: string
+          ip_usuario: string | null
+          operacao: string
+          perfil: string | null
+          registro_id: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          data_evento?: string
+          funcionalidade?: string | null
+          id?: string
+          ip_usuario?: string | null
+          operacao: string
+          perfil?: string | null
+          registro_id?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          dados_anteriores?: Json | null
+          dados_novos?: Json | null
+          data_evento?: string
+          funcionalidade?: string | null
+          id?: string
+          ip_usuario?: string | null
+          operacao?: string
+          perfil?: string | null
+          registro_id?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       autores: {
         Row: {
           created_at: string
@@ -449,6 +496,36 @@ export type Database = {
           },
         ]
       }
+      funcionalidades: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          modulo: string
+          nome_funcionalidade: string
+          rota: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modulo: string
+          nome_funcionalidade: string
+          rota?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          modulo?: string
+          nome_funcionalidade?: string
+          rota?: string | null
+        }
+        Relationships: []
+      }
       fundo_reserva: {
         Row: {
           created_at: string
@@ -788,20 +865,69 @@ export type Database = {
           descricao: string | null
           id: string
           nome: Database["public"]["Enums"]["app_perfil"]
+          perfil_pai: string | null
         }
         Insert: {
           created_at?: string
           descricao?: string | null
           id?: string
           nome: Database["public"]["Enums"]["app_perfil"]
+          perfil_pai?: string | null
         }
         Update: {
           created_at?: string
           descricao?: string | null
           id?: string
           nome?: Database["public"]["Enums"]["app_perfil"]
+          perfil_pai?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "perfis_perfil_pai_fkey"
+            columns: ["perfil_pai"]
+            isOneToOne: false
+            referencedRelation: "perfis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      permissoes_config: {
+        Row: {
+          created_at: string
+          editar: boolean
+          excluir: boolean
+          funcionalidade_id: string
+          id: string
+          perfil: string
+          visualizar: boolean
+        }
+        Insert: {
+          created_at?: string
+          editar?: boolean
+          excluir?: boolean
+          funcionalidade_id: string
+          id?: string
+          perfil: string
+          visualizar?: boolean
+        }
+        Update: {
+          created_at?: string
+          editar?: boolean
+          excluir?: boolean
+          funcionalidade_id?: string
+          id?: string
+          perfil?: string
+          visualizar?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permissoes_config_funcionalidade_id_fkey"
+            columns: ["funcionalidade_id"]
+            isOneToOne: false
+            referencedRelation: "funcionalidades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pessoas: {
         Row: {
@@ -907,6 +1033,7 @@ export type Database = {
         Row: {
           ativo: boolean
           created_at: string
+          deve_trocar_senha: boolean
           email: string
           id: string
           nome: string
@@ -918,6 +1045,7 @@ export type Database = {
         Insert: {
           ativo?: boolean
           created_at?: string
+          deve_trocar_senha?: boolean
           email: string
           id?: string
           nome: string
@@ -929,6 +1057,7 @@ export type Database = {
         Update: {
           ativo?: boolean
           created_at?: string
+          deve_trocar_senha?: boolean
           email?: string
           id?: string
           nome?: string
@@ -962,6 +1091,7 @@ export type Database = {
         | "biblioteca"
         | "almoxarifado"
         | "acervo"
+        | "administrador"
       origem_lancamento: "manual" | "extrato"
       status_mensalidade: "pago" | "em_aberto"
       tipo_financeiro: "entrada" | "saida"
@@ -1099,6 +1229,7 @@ export const Constants = {
         "biblioteca",
         "almoxarifado",
         "acervo",
+        "administrador",
       ],
       origem_lancamento: ["manual", "extrato"],
       status_mensalidade: ["pago", "em_aberto"],

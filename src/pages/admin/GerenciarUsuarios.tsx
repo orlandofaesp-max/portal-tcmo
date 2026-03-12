@@ -27,6 +27,7 @@ interface UsuarioRow {
 }
 
 const perfilLabels: Record<AppPerfil, string> = {
+  administrador: "Administrador",
   congal: "Congal",
   tesouraria: "Tesouraria",
   secretaria: "Secretaria",
@@ -43,7 +44,7 @@ const GerenciarUsuarios = () => {
   const [form, setForm] = useState({ nome: "", email: "", perfil: "tesouraria" as AppPerfil, senha: "", telefone: "" });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
-  const { isCongal } = useAuth();
+  const { isAdmin, usuario } = useAuth();
 
   const fetchUsuarios = async () => {
     const { data } = await supabase.from("usuarios").select("*").order("nome");
@@ -56,6 +57,12 @@ const GerenciarUsuarios = () => {
     u.nome.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Filter available profiles: only administrador can create another administrador
+  const availableProfiles = Constants.public.Enums.app_perfil.filter(p => {
+    if (p === "administrador" && usuario?.perfil !== "administrador") return false;
+    return true;
+  });
 
   const handleSave = async () => {
     if (!form.nome.trim() || !form.email.trim()) return;
@@ -103,8 +110,12 @@ const GerenciarUsuarios = () => {
   };
 
   const toggleAtivo = async (u: UsuarioRow) => {
-    await supabase.from("usuarios").update({ ativo: !u.ativo }).eq("id", u.id);
-    toast({ title: u.ativo ? "Usuário desativado" : "Usuário ativado" });
+    const { error } = await supabase.from("usuarios").update({ ativo: !u.ativo }).eq("id", u.id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: u.ativo ? "Usuário desativado" : "Usuário ativado" });
+    }
     fetchUsuarios();
   };
 
@@ -115,15 +126,19 @@ const GerenciarUsuarios = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("usuarios").delete().eq("id", id);
-    toast({ title: "Usuário removido!", variant: "destructive" });
+    const { error } = await supabase.from("usuarios").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Usuário removido!", variant: "destructive" });
+    }
     fetchUsuarios();
   };
 
-  if (!isCongal) {
+  if (!isAdmin) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">Acesso restrito ao perfil Congal.</p>
+        <p className="text-muted-foreground">Acesso restrito a administradores.</p>
       </div>
     );
   }
@@ -214,8 +229,9 @@ const GerenciarUsuarios = () => {
             </div>
             {!editing && (
               <div>
-                <Label className="text-muted-foreground">Senha</Label>
+                <Label className="text-muted-foreground">Senha temporária</Label>
                 <Input type="password" value={form.senha} onChange={(e) => setForm(p => ({ ...p, senha: e.target.value }))} className="bg-muted border-border mt-1" placeholder="Mín. 6 caracteres" />
+                <p className="text-[10px] text-muted-foreground mt-1">O usuário será obrigado a trocar a senha no primeiro login.</p>
               </div>
             )}
             <div>
@@ -227,7 +243,7 @@ const GerenciarUsuarios = () => {
               <Select value={form.perfil} onValueChange={(v) => setForm(p => ({ ...p, perfil: v as AppPerfil }))}>
                 <SelectTrigger className="bg-muted border-border mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Constants.public.Enums.app_perfil.map(p => (
+                  {availableProfiles.map(p => (
                     <SelectItem key={p} value={p}>{perfilLabels[p]}</SelectItem>
                   ))}
                 </SelectContent>

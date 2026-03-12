@@ -11,7 +11,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify the caller is authenticated and is congal
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Não autorizado" }), {
@@ -23,7 +22,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify caller is congal using their token
+    // Verify caller using their token
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -36,7 +35,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if caller is congal
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: callerProfile } = await adminClient
       .from("usuarios")
@@ -45,8 +43,9 @@ Deno.serve(async (req) => {
       .eq("ativo", true)
       .single();
 
-    if (!callerProfile || callerProfile.perfil !== "congal") {
-      return new Response(JSON.stringify({ error: "Apenas Congal pode criar usuários" }), {
+    // Allow both congal and administrador to create users
+    if (!callerProfile || !["congal", "administrador"].includes(callerProfile.perfil)) {
+      return new Response(JSON.stringify({ error: "Apenas administradores podem criar usuários" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -61,7 +60,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create auth user with admin API (does NOT affect caller's session)
+    // Only administrador can create another administrador
+    if (perfil === "administrador" && callerProfile.perfil !== "administrador") {
+      return new Response(JSON.stringify({ error: "Apenas administradores podem criar outros administradores" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create auth user
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
       email,
       password,
@@ -75,17 +82,17 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Insert into usuarios table
+    // Insert into usuarios table with deve_trocar_senha = true
     const { error: insertError } = await adminClient.from("usuarios").insert({
       user_id: newUser.user.id,
       nome,
       email,
       perfil,
       telefone: telefone || null,
+      deve_trocar_senha: true,
     });
 
     if (insertError) {
-      // Rollback: delete auth user
       await adminClient.auth.admin.deleteUser(newUser.user.id);
       return new Response(JSON.stringify({ error: insertError.message }), {
         status: 400,
