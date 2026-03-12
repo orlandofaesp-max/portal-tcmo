@@ -15,6 +15,10 @@ import {
   Shield,
   Tag,
   UserCheck,
+  KeyRound,
+  Settings,
+  ScrollText,
+  Puzzle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +30,10 @@ const modules = [
     icon: ShieldCheck,
     items: [
       { to: "/admin/usuarios", icon: Users, label: "Usuários" },
+      { to: "/admin/perfis", icon: Shield, label: "Perfis" },
+      { to: "/admin/permissoes", icon: KeyRound, label: "Permissões" },
+      { to: "/admin/funcionalidades", icon: Puzzle, label: "Funcionalidades" },
+      { to: "/admin/auditoria", icon: ScrollText, label: "Auditoria" },
     ],
   },
   {
@@ -89,6 +97,19 @@ const AppSidebar = () => {
   const location = useLocation();
   const { usuario, isPerfil, signOut } = useAuth();
 
+  const perfilDisplay = (perfil: string) => {
+    const map: Record<string, string> = {
+      administrador: "Administrador",
+      congal: "Congal",
+      tesouraria: "Tesouraria",
+      secretaria: "Secretaria",
+      biblioteca: "Biblioteca",
+      almoxarifado: "Almoxarifado",
+      acervo: "Acervo",
+    };
+    return map[perfil] || perfil;
+  };
+
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-50">
       {/* Logo */}
@@ -135,7 +156,7 @@ const AppSidebar = () => {
         {usuario && (
           <div className="px-3 py-2 mb-2">
             <p className="text-xs font-medium text-sidebar-foreground truncate">{usuario.nome}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">{usuario.perfil}</p>
+            <p className="text-[10px] text-muted-foreground">{perfilDisplay(usuario.perfil)}</p>
           </div>
         )}
         <button
@@ -146,7 +167,7 @@ const AppSidebar = () => {
           Sair
         </button>
         <div className="px-3 py-1 mt-1">
-          <p className="text-[10px] text-muted-foreground">v1.0 — Portal TCMO</p>
+          <p className="text-[10px] text-muted-foreground">v1.1 — Portal TCMO</p>
         </div>
       </div>
     </aside>

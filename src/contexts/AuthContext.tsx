@@ -11,6 +11,7 @@ interface UsuarioInfo {
   email: string;
   perfil: AppPerfil;
   ativo: boolean;
+  deve_trocar_senha: boolean;
 }
 
 interface AuthContextType {
@@ -21,7 +22,9 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isPerfil: (perfil: AppPerfil) => boolean;
+  isAdmin: boolean;
   isCongal: boolean;
+  marcarSenhaTrocada: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: data.email,
         perfil: data.perfil,
         ativo: data.ativo,
+        deve_trocar_senha: (data as any).deve_trocar_senha ?? false,
       });
     } else {
       setUsuario(null);
@@ -89,11 +93,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUsuario(null);
   };
 
-  const isPerfil = (perfil: AppPerfil) => usuario?.perfil === perfil || usuario?.perfil === "congal";
-  const isCongal = usuario?.perfil === "congal";
+  const isPerfil = (perfil: AppPerfil) =>
+    usuario?.perfil === perfil ||
+    usuario?.perfil === "congal" ||
+    usuario?.perfil === "administrador";
+
+  const isAdmin = usuario?.perfil === "administrador" || usuario?.perfil === "congal";
+  const isCongal = usuario?.perfil === "congal" || usuario?.perfil === "administrador";
+
+  const marcarSenhaTrocada = () => {
+    if (usuario) {
+      setUsuario({ ...usuario, deve_trocar_senha: false });
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ session, user, usuario, loading, signIn, signOut, isPerfil, isCongal }}>
+    <AuthContext.Provider value={{ session, user, usuario, loading, signIn, signOut, isPerfil, isAdmin, isCongal, marcarSenhaTrocada }}>
       {children}
     </AuthContext.Provider>
   );
