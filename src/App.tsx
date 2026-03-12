@@ -8,6 +8,8 @@ import type { Database } from "@/integrations/supabase/types";
 import AppSidebar from "@/components/AppSidebar";
 import AppLayout from "@/components/AppLayout";
 import Login from "@/pages/Login";
+import ResetPassword from "@/pages/ResetPassword";
+import TrocarSenha from "@/pages/TrocarSenha";
 import Dashboard from "@/pages/Dashboard";
 import Mensalidades from "@/pages/Mensalidades";
 import LivroCaixa from "@/pages/LivroCaixa";
@@ -16,6 +18,10 @@ import Associados from "@/pages/tesouraria/Associados";
 import Categorias from "@/pages/tesouraria/Categorias";
 import ExtratoAssociado from "@/pages/tesouraria/ExtratoAssociado";
 import GerenciarUsuarios from "@/pages/admin/GerenciarUsuarios";
+import GerenciarPerfis from "@/pages/admin/GerenciarPerfis";
+import GerenciarPermissoes from "@/pages/admin/GerenciarPermissoes";
+import GerenciarFuncionalidades from "@/pages/admin/GerenciarFuncionalidades";
+import Auditoria from "@/pages/admin/Auditoria";
 import AcervoDashboard from "@/pages/acervo/AcervoDashboard";
 import RegistrosAcervo from "@/pages/acervo/RegistrosAcervo";
 import RegistroDetalhe from "@/pages/acervo/RegistroDetalhe";
@@ -38,7 +44,7 @@ const queryClient = new QueryClient();
 
 type AppPerfil = Database["public"]["Enums"]["app_perfil"];
 
-/** Route guard by profile — congal always has access */
+/** Route guard by profile — congal and administrador always have access */
 const ModuleRoute = ({ perfil, children }: { perfil: AppPerfil; children: React.ReactNode }) => {
   const { isPerfil } = useAuth();
   if (!isPerfil(perfil)) return <Navigate to="/" replace />;
@@ -63,10 +69,15 @@ const ProtectedRoutes = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground text-sm">Seu acesso ainda não foi configurado.</p>
-          <p className="text-muted-foreground text-xs mt-1">Solicite ao administrador (Congal) a ativação do seu perfil.</p>
+          <p className="text-muted-foreground text-xs mt-1">Solicite ao administrador a ativação do seu perfil.</p>
         </div>
       </div>
     );
+  }
+
+  // Force password change on first login
+  if (usuario.deve_trocar_senha) {
+    return <TrocarSenha />;
   }
 
   return (
@@ -75,8 +86,12 @@ const ProtectedRoutes = () => {
       <AppLayout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          {/* Administração — somente congal */}
+          {/* Administração — congal + administrador */}
           <Route path="/admin/usuarios" element={<ModuleRoute perfil="congal"><GerenciarUsuarios /></ModuleRoute>} />
+          <Route path="/admin/perfis" element={<ModuleRoute perfil="congal"><GerenciarPerfis /></ModuleRoute>} />
+          <Route path="/admin/permissoes" element={<ModuleRoute perfil="congal"><GerenciarPermissoes /></ModuleRoute>} />
+          <Route path="/admin/funcionalidades" element={<ModuleRoute perfil="congal"><GerenciarFuncionalidades /></ModuleRoute>} />
+          <Route path="/admin/auditoria" element={<ModuleRoute perfil="congal"><Auditoria /></ModuleRoute>} />
           {/* Tesouraria */}
           <Route path="/tesouraria/associados" element={<ModuleRoute perfil="tesouraria"><Associados /></ModuleRoute>} />
           <Route path="/tesouraria/associados/:id/extrato" element={<ModuleRoute perfil="tesouraria"><ExtratoAssociado /></ModuleRoute>} />
@@ -124,6 +139,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/*" element={<ProtectedRoutes />} />
           </Routes>
         </AuthProvider>
