@@ -60,7 +60,7 @@ const GerenciarUsuarios = () => {
 
   // Filter available profiles: only administrador can create another administrador
   const availableProfiles = Constants.public.Enums.app_perfil.filter(p => {
-    if (p === "administrador" && usuario?.perfil !== "administrador") return false;
+    if (p === "administrador" && !["administrador", "congal"].includes(usuario?.perfil || "")) return false;
     return true;
   });
 
