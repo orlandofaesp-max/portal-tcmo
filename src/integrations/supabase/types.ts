@@ -1092,6 +1092,7 @@ export type Database = {
         | "almoxarifado"
         | "acervo"
         | "administrador"
+        | "pai_mae_de_santo"
       origem_lancamento: "manual" | "extrato"
       status_mensalidade: "pago" | "em_aberto"
       tipo_financeiro: "entrada" | "saida"
@@ -1230,6 +1231,7 @@ export const Constants = {
         "almoxarifado",
         "acervo",
         "administrador",
+        "pai_mae_de_santo",
       ],
       origem_lancamento: ["manual", "extrato"],
       status_mensalidade: ["pago", "em_aberto"],
