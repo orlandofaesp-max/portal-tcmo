@@ -32,19 +32,28 @@ import CategoriasAlmoxarifado from "@/pages/almoxarifado/CategoriasAlmoxarifado"
 import MovimentacoesAlmoxarifado from "@/pages/almoxarifado/Movimentacoes";
 import Pessoas from "@/pages/secretaria/Pessoas";
 import PessoaPerfil from "@/pages/secretaria/PessoaPerfil";
+import FichaAdmissao from "@/pages/secretaria/FichaAdmissao";
+import Atas from "@/pages/secretaria/Atas";
+import AtaEditor from "@/pages/secretaria/AtaEditor";
 import FundoReserva from "@/pages/tesouraria/FundoReserva";
 import BibliotecaDashboard from "@/pages/biblioteca/BibliotecaDashboard";
 import ObrasPage from "@/pages/biblioteca/Obras";
 import AutoresPage from "@/pages/biblioteca/Autores";
 import CategoriasBibliotecaPage from "@/pages/biblioteca/CategoriasBiblioteca";
 import EmprestimosPage from "@/pages/biblioteca/Emprestimos";
+import DashboardEspiritual from "@/pages/prontuario/DashboardEspiritual";
+import MediunsProntuario from "@/pages/prontuario/MediunsProntuario";
+import FichaCorrente from "@/pages/prontuario/FichaCorrente";
+import Ocorrencias from "@/pages/prontuario/Ocorrencias";
+import ArvoreEspiritual from "@/pages/prontuario/ArvoreEspiritual";
+import MapaEspiritual from "@/pages/prontuario/MapaEspiritual";
+import LinhaDoTempo from "@/pages/prontuario/LinhaDoTempo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 type AppPerfil = Database["public"]["Enums"]["app_perfil"];
 
-/** Route guard by profile — congal and administrador always have access */
 const ModuleRoute = ({ perfil, children }: { perfil: AppPerfil; children: React.ReactNode }) => {
   const { isPerfil } = useAuth();
   if (!isPerfil(perfil)) return <Navigate to="/" replace />;
@@ -75,7 +84,6 @@ const ProtectedRoutes = () => {
     );
   }
 
-  // Force password change on first login
   if (usuario.deve_trocar_senha) {
     return <TrocarSenha />;
   }
@@ -86,7 +94,7 @@ const ProtectedRoutes = () => {
       <AppLayout>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          {/* Administração — congal + administrador */}
+          {/* Administração */}
           <Route path="/admin/usuarios" element={<ModuleRoute perfil="congal"><GerenciarUsuarios /></ModuleRoute>} />
           <Route path="/admin/perfis" element={<ModuleRoute perfil="congal"><GerenciarPerfis /></ModuleRoute>} />
           <Route path="/admin/permissoes" element={<ModuleRoute perfil="congal"><GerenciarPermissoes /></ModuleRoute>} />
@@ -103,6 +111,17 @@ const ProtectedRoutes = () => {
           {/* Secretaria */}
           <Route path="/secretaria/pessoas" element={<ModuleRoute perfil="secretaria"><Pessoas /></ModuleRoute>} />
           <Route path="/secretaria/pessoas/:id" element={<ModuleRoute perfil="secretaria"><PessoaPerfil /></ModuleRoute>} />
+          <Route path="/secretaria/ficha-admissao" element={<ModuleRoute perfil="secretaria"><FichaAdmissao /></ModuleRoute>} />
+          <Route path="/secretaria/atas" element={<ModuleRoute perfil="secretaria"><Atas /></ModuleRoute>} />
+          <Route path="/secretaria/atas/nova" element={<ModuleRoute perfil="secretaria"><AtaEditor /></ModuleRoute>} />
+          {/* Prontuário Mediúnico */}
+          <Route path="/prontuario/dashboard" element={<ModuleRoute perfil="pai_mae_de_santo"><DashboardEspiritual /></ModuleRoute>} />
+          <Route path="/prontuario/mediuns" element={<ModuleRoute perfil="pai_mae_de_santo"><MediunsProntuario /></ModuleRoute>} />
+          <Route path="/prontuario/mediuns/:id" element={<ModuleRoute perfil="pai_mae_de_santo"><FichaCorrente /></ModuleRoute>} />
+          <Route path="/prontuario/ocorrencias" element={<ModuleRoute perfil="pai_mae_de_santo"><Ocorrencias /></ModuleRoute>} />
+          <Route path="/prontuario/arvore" element={<ModuleRoute perfil="pai_mae_de_santo"><ArvoreEspiritual /></ModuleRoute>} />
+          <Route path="/prontuario/mapa" element={<ModuleRoute perfil="pai_mae_de_santo"><MapaEspiritual /></ModuleRoute>} />
+          <Route path="/prontuario/timeline" element={<ModuleRoute perfil="pai_mae_de_santo"><LinhaDoTempo /></ModuleRoute>} />
           {/* Biblioteca */}
           <Route path="/biblioteca/dashboard" element={<ModuleRoute perfil="biblioteca"><BibliotecaDashboard /></ModuleRoute>} />
           <Route path="/biblioteca/obras" element={<ModuleRoute perfil="biblioteca"><ObrasPage /></ModuleRoute>} />
@@ -119,7 +138,7 @@ const ProtectedRoutes = () => {
           <Route path="/acervo/registros" element={<ModuleRoute perfil="acervo"><RegistrosAcervo /></ModuleRoute>} />
           <Route path="/acervo/registros/:id" element={<ModuleRoute perfil="acervo"><RegistroDetalhe /></ModuleRoute>} />
           <Route path="/acervo/eventos" element={<ModuleRoute perfil="acervo"><EventosHistoricos /></ModuleRoute>} />
-          {/* Legacy redirects */}
+          {/* Legacy */}
           <Route path="/mensalidades" element={<Navigate to="/tesouraria/mensalidades" replace />} />
           <Route path="/livro-caixa" element={<Navigate to="/tesouraria/livro-caixa" replace />} />
           <Route path="/demonstracoes" element={<Navigate to="/tesouraria/demonstracoes" replace />} />

@@ -34,6 +34,7 @@ const perfilLabels: Record<AppPerfil, string> = {
   biblioteca: "Biblioteca",
   almoxarifado: "Almoxarifado",
   acervo: "Acervo",
+  pai_mae_de_santo: "Pai/Mãe de Santo",
 };
 
 const GerenciarUsuarios = () => {

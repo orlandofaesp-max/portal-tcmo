@@ -52,6 +52,44 @@ export type Database = {
           },
         ]
       }
+      assinaturas_ata: {
+        Row: {
+          ata_id: string
+          created_at: string
+          data_assinatura: string | null
+          email_assinante: string | null
+          id: string
+          nome_assinante: string
+          status_assinatura: string
+        }
+        Insert: {
+          ata_id: string
+          created_at?: string
+          data_assinatura?: string | null
+          email_assinante?: string | null
+          id?: string
+          nome_assinante: string
+          status_assinatura?: string
+        }
+        Update: {
+          ata_id?: string
+          created_at?: string
+          data_assinatura?: string | null
+          email_assinante?: string | null
+          id?: string
+          nome_assinante?: string
+          status_assinatura?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assinaturas_ata_ata_id_fkey"
+            columns: ["ata_id"]
+            isOneToOne: false
+            referencedRelation: "atas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       associados: {
         Row: {
           ativo: boolean
@@ -79,6 +117,42 @@ export type Database = {
           nome?: string
           numero?: string | null
           saldo_anterior?: number
+        }
+        Relationships: []
+      }
+      atas: {
+        Row: {
+          arquivo_assinado: string | null
+          arquivo_original: string | null
+          conteudo: string | null
+          created_at: string
+          data_reuniao: string | null
+          id: string
+          status: string
+          tipo_reuniao: string | null
+          titulo: string
+        }
+        Insert: {
+          arquivo_assinado?: string | null
+          arquivo_original?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_reuniao?: string | null
+          id?: string
+          status?: string
+          tipo_reuniao?: string | null
+          titulo: string
+        }
+        Update: {
+          arquivo_assinado?: string | null
+          arquivo_original?: string | null
+          conteudo?: string | null
+          created_at?: string
+          data_reuniao?: string | null
+          id?: string
+          status?: string
+          tipo_reuniao?: string | null
+          titulo?: string
         }
         Relationships: []
       }
@@ -496,6 +570,47 @@ export type Database = {
           },
         ]
       }
+      ficha_corrente: {
+        Row: {
+          batizado_umbanda: string | null
+          casamento_umbanda: string | null
+          created_at: string
+          id: string
+          ingresso_umbanda: string | null
+          padrinho_espiritual: string | null
+          padrinho_material: string | null
+          pessoa_id: string
+        }
+        Insert: {
+          batizado_umbanda?: string | null
+          casamento_umbanda?: string | null
+          created_at?: string
+          id?: string
+          ingresso_umbanda?: string | null
+          padrinho_espiritual?: string | null
+          padrinho_material?: string | null
+          pessoa_id: string
+        }
+        Update: {
+          batizado_umbanda?: string | null
+          casamento_umbanda?: string | null
+          created_at?: string
+          id?: string
+          ingresso_umbanda?: string | null
+          padrinho_espiritual?: string | null
+          padrinho_material?: string | null
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ficha_corrente_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funcionalidades: {
         Row: {
           ativo: boolean
@@ -680,6 +795,45 @@ export type Database = {
           },
         ]
       }
+      linhagem_espiritual: {
+        Row: {
+          created_at: string
+          id: string
+          mentor_id: string | null
+          pessoa_id: string
+          tipo_vinculo: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mentor_id?: string | null
+          pessoa_id: string
+          tipo_vinculo: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mentor_id?: string | null
+          pessoa_id?: string
+          tipo_vinculo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "linhagem_espiritual_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "linhagem_espiritual_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mensalidades: {
         Row: {
           associado_id: string
@@ -859,6 +1013,41 @@ export type Database = {
           },
         ]
       }
+      ocorrencias_mediunicas: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          pessoa_id: string
+          responsavel: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          pessoa_id: string
+          responsavel?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          pessoa_id?: string
+          responsavel?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ocorrencias_mediunicas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis: {
         Row: {
           created_at: string
@@ -931,43 +1120,82 @@ export type Database = {
       }
       pessoas: {
         Row: {
+          ativo_espiritual: boolean | null
+          cpf: string | null
           created_at: string
+          data_admissao: string | null
+          data_demissao: string | null
+          data_emissao_ficha: string | null
           data_ingresso_corrente: string | null
           data_nascimento: string | null
           email: string | null
+          estado_civil: string | null
           id: string
+          nacionalidade: string | null
+          naturalidade: string | null
           nome: string
+          nome_mae: string | null
+          nome_pai: string | null
+          numero_associado: string | null
           observacoes: string | null
           possui_mensalidade: boolean
+          rg: string | null
           situacao: string
           telefone: string | null
           tipo_vinculo: string | null
+          tipo_vinculo_umbanda: string | null
         }
         Insert: {
+          ativo_espiritual?: boolean | null
+          cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
+          data_demissao?: string | null
+          data_emissao_ficha?: string | null
           data_ingresso_corrente?: string | null
           data_nascimento?: string | null
           email?: string | null
+          estado_civil?: string | null
           id?: string
+          nacionalidade?: string | null
+          naturalidade?: string | null
           nome: string
+          nome_mae?: string | null
+          nome_pai?: string | null
+          numero_associado?: string | null
           observacoes?: string | null
           possui_mensalidade?: boolean
+          rg?: string | null
           situacao?: string
           telefone?: string | null
           tipo_vinculo?: string | null
+          tipo_vinculo_umbanda?: string | null
         }
         Update: {
+          ativo_espiritual?: boolean | null
+          cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
+          data_demissao?: string | null
+          data_emissao_ficha?: string | null
           data_ingresso_corrente?: string | null
           data_nascimento?: string | null
           email?: string | null
+          estado_civil?: string | null
           id?: string
+          nacionalidade?: string | null
+          naturalidade?: string | null
           nome?: string
+          nome_mae?: string | null
+          nome_pai?: string | null
+          numero_associado?: string | null
           observacoes?: string | null
           possui_mensalidade?: boolean
+          rg?: string | null
           situacao?: string
           telefone?: string | null
           tipo_vinculo?: string | null
+          tipo_vinculo_umbanda?: string | null
         }
         Relationships: []
       }
@@ -1028,6 +1256,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      timeline_eventos: {
+        Row: {
+          created_at: string
+          data_evento: string
+          descricao: string | null
+          id: string
+          origem_modulo: string | null
+          registro_id: string | null
+          tipo_evento: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          data_evento: string
+          descricao?: string | null
+          id?: string
+          origem_modulo?: string | null
+          registro_id?: string | null
+          tipo_evento: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          data_evento?: string
+          descricao?: string | null
+          id?: string
+          origem_modulo?: string | null
+          registro_id?: string | null
+          tipo_evento?: string
+          titulo?: string
+        }
+        Relationships: []
       }
       usuarios: {
         Row: {
@@ -1092,6 +1353,7 @@ export type Database = {
         | "almoxarifado"
         | "acervo"
         | "administrador"
+        | "pai_mae_de_santo"
       origem_lancamento: "manual" | "extrato"
       status_mensalidade: "pago" | "em_aberto"
       tipo_financeiro: "entrada" | "saida"
@@ -1230,6 +1492,7 @@ export const Constants = {
         "almoxarifado",
         "acervo",
         "administrador",
+        "pai_mae_de_santo",
       ],
       origem_lancamento: ["manual", "extrato"],
       status_mensalidade: ["pago", "em_aberto"],
