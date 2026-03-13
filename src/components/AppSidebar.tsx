@@ -1,24 +1,9 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Receipt,
-  BookOpen,
-  TrendingUp,
-  Users,
-  Package,
-  Library,
-  ClipboardList,
-  Archive,
-  ChevronRight,
-  LogOut,
-  ShieldCheck,
-  Shield,
-  Tag,
-  UserCheck,
-  KeyRound,
-  Settings,
-  ScrollText,
-  Puzzle,
+  LayoutDashboard, Receipt, BookOpen, TrendingUp, Users, Package,
+  Library, ClipboardList, Archive, ChevronRight, LogOut, ShieldCheck,
+  Shield, Tag, UserCheck, KeyRound, ScrollText, Puzzle, Heart,
+  FileText, Sparkles, GitBranch, Clock, Map,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,6 +41,21 @@ const modules = [
     icon: ClipboardList,
     items: [
       { to: "/secretaria/pessoas", icon: UserCheck, label: "Pessoas" },
+      { to: "/secretaria/ficha-admissao", icon: FileText, label: "Ficha de Admissão" },
+      { to: "/secretaria/atas", icon: ScrollText, label: "Atas" },
+    ],
+  },
+  {
+    label: "Prontuário Mediúnico",
+    perfil: "pai_mae_de_santo" as const,
+    icon: Heart,
+    items: [
+      { to: "/prontuario/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/prontuario/mediuns", icon: Users, label: "Médiuns" },
+      { to: "/prontuario/ocorrencias", icon: ClipboardList, label: "Ocorrências" },
+      { to: "/prontuario/arvore", icon: GitBranch, label: "Árvore Espiritual" },
+      { to: "/prontuario/mapa", icon: Map, label: "Mapa Espiritual" },
+      { to: "/prontuario/timeline", icon: Clock, label: "Linha do Tempo" },
     ],
   },
   {
@@ -106,19 +106,18 @@ const AppSidebar = () => {
       biblioteca: "Biblioteca",
       almoxarifado: "Almoxarifado",
       acervo: "Acervo",
+      pai_mae_de_santo: "Pai/Mãe de Santo",
     };
     return map[perfil] || perfil;
   };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-50">
-      {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <h1 className="text-xl font-bold text-gradient-gold tracking-tight">TCMO</h1>
         <p className="text-xs text-sidebar-foreground mt-1">Portal de Gestão</p>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {modules.map((mod) => {
           if (!isPerfil(mod.perfil)) return null;
@@ -151,7 +150,6 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-sidebar-border">
         {usuario && (
           <div className="px-3 py-2 mb-2">
@@ -167,7 +165,7 @@ const AppSidebar = () => {
           Sair
         </button>
         <div className="px-3 py-1 mt-1">
-          <p className="text-[10px] text-muted-foreground">v1.1 — Portal TCMO</p>
+          <p className="text-[10px] text-muted-foreground">v1.2 — Portal TCMO</p>
         </div>
       </div>
     </aside>

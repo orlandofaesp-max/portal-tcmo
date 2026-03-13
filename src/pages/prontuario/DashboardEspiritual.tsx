@@ -35,10 +35,10 @@ const DashboardEspiritual = () => {
       <PageHeader title="Dashboard Espiritual" subtitle="Indicadores gerais do Prontuário Mediúnico" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard icon={Users} label="Médiuns Ativos" value={mediuns.length} />
-        <StatCard icon={Sparkles} label="Entidades Ativas" value={entidades.length} />
-        <StatCard icon={GitBranch} label="Linhas Espirituais Ativas" value={linhasAtivas.size} />
-        <StatCard icon={Crown} label="Coroações Realizadas" value={coroacoes.length} />
+        <StatCard title="Médiuns Ativos" value={String(mediuns.length)} icon={<Users className="w-5 h-5" />} variant="gold" />
+        <StatCard title="Entidades Ativas" value={String(entidades.length)} icon={<Sparkles className="w-5 h-5" />} variant="gold" />
+        <StatCard title="Linhas Espirituais" value={String(linhasAtivas.size)} icon={<GitBranch className="w-5 h-5" />} variant="gold" />
+        <StatCard title="Coroações Realizadas" value={String(coroacoes.length)} icon={<Crown className="w-5 h-5" />} variant="gold" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

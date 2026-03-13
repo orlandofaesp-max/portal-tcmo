@@ -15,9 +15,9 @@ const MapaEspiritual = () => {
       <PageHeader title="Mapa Espiritual" subtitle="Entidades da casa organizadas por linha espiritual" />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <StatCard icon={Users} label="Médiuns Ativos" value={mediuns.length} />
-        <StatCard icon={Sparkles} label="Total de Entidades" value={entidades.length} />
-        <StatCard icon={Sparkles} label="Linhas Ativas" value={new Set(entidades.map(e => e.linha).filter(Boolean)).size} />
+        <StatCard title="Médiuns Ativos" value={String(mediuns.length)} icon={<Users className="w-5 h-5" />} variant="gold" />
+        <StatCard title="Total de Entidades" value={String(entidades.length)} icon={<Sparkles className="w-5 h-5" />} variant="gold" />
+        <StatCard title="Linhas Ativas" value={String(new Set(entidades.map(e => e.linha).filter(Boolean)).size)} icon={<Sparkles className="w-5 h-5" />} variant="gold" />
       </div>
 
       {isLoading ? <p className="text-muted-foreground text-sm">Carregando...</p> : (
