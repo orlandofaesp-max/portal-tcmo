@@ -141,10 +141,10 @@ const GerenciarPerfis = () => {
             </div>
             <div>
               <Label className="text-muted-foreground">Herda permissões de</Label>
-              <Select value={form.perfil_pai} onValueChange={(v) => setForm(p => ({ ...p, perfil_pai: v }))}>
+              <Select value={form.perfil_pai || "none"} onValueChange={(v) => setForm(p => ({ ...p, perfil_pai: v === "none" ? "" : v }))}>
                 <SelectTrigger className="bg-muted border-border mt-1"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="none">Nenhum</SelectItem>
                   {perfis.filter(p => p.id !== editing?.id).map(p => (
                     <SelectItem key={p.id} value={p.id}>{perfilLabels[p.nome] || p.nome}</SelectItem>
                   ))}
