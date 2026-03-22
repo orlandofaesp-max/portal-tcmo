@@ -1394,9 +1394,6 @@ export type Database = {
         Returns: boolean
       }
       is_usuario_ativo: { Args: { _user_id: string }; Returns: boolean }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
-      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
       app_perfil:
