@@ -408,6 +408,39 @@ export type Database = {
           },
         ]
       }
+      de_para_pessoas: {
+        Row: {
+          aprovado: boolean | null
+          created_at: string | null
+          id: string
+          nome_destino: string | null
+          nome_origem: string | null
+          pessoa_id_destino: string | null
+          revisado: boolean | null
+          score: number | null
+        }
+        Insert: {
+          aprovado?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome_destino?: string | null
+          nome_origem?: string | null
+          pessoa_id_destino?: string | null
+          revisado?: boolean | null
+          score?: number | null
+        }
+        Update: {
+          aprovado?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome_destino?: string | null
+          nome_origem?: string | null
+          pessoa_id_destino?: string | null
+          revisado?: boolean | null
+          score?: number | null
+        }
+        Relationships: []
+      }
       emprestimos: {
         Row: {
           created_at: string
@@ -1256,6 +1289,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staging_pessoas: {
+        Row: {
+          data_nascimento: string | null
+          id: string
+          nome: string | null
+        }
+        Insert: {
+          data_nascimento?: string | null
+          id?: string
+          nome?: string | null
+        }
+        Update: {
+          data_nascimento?: string | null
+          id?: string
+          nome?: string | null
+        }
+        Relationships: []
       }
       timeline_eventos: {
         Row: {
