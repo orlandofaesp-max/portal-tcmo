@@ -1382,7 +1382,13 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_pessoas_resolvidas: {
+        Row: {
+          nome_origem: string | null
+          pessoa_id_final: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       count_usuarios: { Args: never; Returns: number }
