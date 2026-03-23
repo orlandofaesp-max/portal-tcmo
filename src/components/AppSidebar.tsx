@@ -3,7 +3,8 @@ import {
   LayoutDashboard, Receipt, BookOpen, TrendingUp, Users, Package,
   Library, ClipboardList, Archive, ChevronRight, LogOut, ShieldCheck,
   Shield, Tag, UserCheck, KeyRound, ScrollText, Puzzle, Heart,
-  FileText, Sparkles, GitBranch, Clock, Map,
+  FileText, Sparkles, GitBranch, Clock, Map, CalendarDays,
+  CheckCircle, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
