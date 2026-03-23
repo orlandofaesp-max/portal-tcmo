@@ -48,7 +48,9 @@ const FichaCorrente = () => {
   const { data: entidades = [] } = useEntidades(id);
   const { data: historico = [] } = useHistoricoReligioso(id);
   const { data: fichaCorrente } = useFichaCorrente(id);
-
+  const { data: cruzLinhas = [] } = useCruzamentosLinha(id);
+  const { data: correntesPessoa = [] } = useCorrentesDaPessoa(id);
+  const upsertCruzLinha = useUpsertCruzamentoLinha();
   const createCruz = useCreateCruzamento();
   const updateCruz = useUpdateCruzamento();
   const deleteCruz = useDeleteCruzamento();
