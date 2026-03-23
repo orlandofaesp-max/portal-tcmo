@@ -14,8 +14,8 @@ import { format } from "date-fns";
 const AgendaCorrente = () => {
   const { toast } = useToast();
   const { data: correntes = [] } = useCorrentes();
-  const [filtroCorrente, setFiltroCorrente] = useState<string>("");
-  const { data: eventos = [] } = useAgendaCorrente(filtroCorrente || undefined);
+  const [filtroCorrente, setFiltroCorrente] = useState<string>("all");
+  const { data: eventos = [] } = useAgendaCorrente(filtroCorrente && filtroCorrente !== "all" ? filtroCorrente : undefined);
   const createAgenda = useCreateAgenda();
   const deleteAgenda = useDeleteAgenda();
 

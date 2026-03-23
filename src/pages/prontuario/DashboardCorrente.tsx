@@ -10,9 +10,9 @@ import { supabase } from "@/integrations/supabase/client";
 const DashboardCorrente = () => {
   const { data: correntes = [] } = useCorrentes();
   const { data: pessoaLinks = [] } = usePessoasCorrentes();
-  const [correnteId, setCorrenteId] = useState<string>("");
+  const [correnteId, setCorrenteId] = useState<string>("all");
 
-  const filteredLinks = correnteId
+  const filteredLinks = correnteId && correnteId !== "all"
     ? pessoaLinks.filter((l: any) => l.corrente_id === correnteId)
     : pessoaLinks;
 
