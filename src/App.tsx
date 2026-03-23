@@ -42,8 +42,12 @@ import AutoresPage from "@/pages/biblioteca/Autores";
 import CategoriasBibliotecaPage from "@/pages/biblioteca/CategoriasBiblioteca";
 import EmprestimosPage from "@/pages/biblioteca/Emprestimos";
 import DashboardEspiritual from "@/pages/prontuario/DashboardEspiritual";
+import DashboardCorrente from "@/pages/prontuario/DashboardCorrente";
 import MediunsProntuario from "@/pages/prontuario/MediunsProntuario";
 import FichaCorrente from "@/pages/prontuario/FichaCorrente";
+import Correntes from "@/pages/prontuario/Correntes";
+import AgendaCorrente from "@/pages/prontuario/AgendaCorrente";
+import FrequenciaMediuns from "@/pages/prontuario/FrequenciaMediuns";
 import Ocorrencias from "@/pages/prontuario/Ocorrencias";
 import ArvoreEspiritual from "@/pages/prontuario/ArvoreEspiritual";
 import MapaEspiritual from "@/pages/prontuario/MapaEspiritual";
@@ -116,8 +120,12 @@ const ProtectedRoutes = () => {
           <Route path="/secretaria/atas/nova" element={<ModuleRoute perfil="secretaria"><AtaEditor /></ModuleRoute>} />
           {/* Prontuário Mediúnico */}
           <Route path="/prontuario/dashboard" element={<ModuleRoute perfil="pai_mae_de_santo"><DashboardEspiritual /></ModuleRoute>} />
+          <Route path="/prontuario/dashboard-corrente" element={<ModuleRoute perfil="pai_mae_de_santo"><DashboardCorrente /></ModuleRoute>} />
           <Route path="/prontuario/mediuns" element={<ModuleRoute perfil="pai_mae_de_santo"><MediunsProntuario /></ModuleRoute>} />
           <Route path="/prontuario/mediuns/:id" element={<ModuleRoute perfil="pai_mae_de_santo"><FichaCorrente /></ModuleRoute>} />
+          <Route path="/prontuario/correntes" element={<ModuleRoute perfil="pai_mae_de_santo"><Correntes /></ModuleRoute>} />
+          <Route path="/prontuario/agenda" element={<ModuleRoute perfil="pai_mae_de_santo"><AgendaCorrente /></ModuleRoute>} />
+          <Route path="/prontuario/frequencia" element={<ModuleRoute perfil="pai_mae_de_santo"><FrequenciaMediuns /></ModuleRoute>} />
           <Route path="/prontuario/ocorrencias" element={<ModuleRoute perfil="pai_mae_de_santo"><Ocorrencias /></ModuleRoute>} />
           <Route path="/prontuario/arvore" element={<ModuleRoute perfil="pai_mae_de_santo"><ArvoreEspiritual /></ModuleRoute>} />
           <Route path="/prontuario/mapa" element={<ModuleRoute perfil="pai_mae_de_santo"><MapaEspiritual /></ModuleRoute>} />

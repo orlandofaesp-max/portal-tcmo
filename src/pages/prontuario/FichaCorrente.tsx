@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { usePessoa } from "@/hooks/useSecretaria";
 import {
@@ -16,6 +17,7 @@ import {
   useHistoricoReligioso, useCreateHistoricoReligioso, useDeleteHistoricoReligioso,
   useFichaCorrente, useUpsertFichaCorrente,
 } from "@/hooks/useProntuario";
+import { useCruzamentosLinha, useUpsertCruzamentoLinha, LINHAS_ORDEM, useCorrentesDaPessoa } from "@/hooks/useCorrente";
 import { useState } from "react";
 import { format, differenceInYears, differenceInMonths } from "date-fns";
 
@@ -46,7 +48,9 @@ const FichaCorrente = () => {
   const { data: entidades = [] } = useEntidades(id);
   const { data: historico = [] } = useHistoricoReligioso(id);
   const { data: fichaCorrente } = useFichaCorrente(id);
-
+  const { data: cruzLinhas = [] } = useCruzamentosLinha(id);
+  const { data: correntesPessoa = [] } = useCorrentesDaPessoa(id);
+  const upsertCruzLinha = useUpsertCruzamentoLinha();
   const createCruz = useCreateCruzamento();
   const updateCruz = useUpdateCruzamento();
   const deleteCruz = useDeleteCruzamento();
@@ -173,7 +177,12 @@ const FichaCorrente = () => {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-card-foreground">{pessoa.nome}</h1>
-        <p className="text-sm text-muted-foreground">Prontuário Mediúnico — {(pessoa as any).tipo_vinculo_umbanda || pessoa.tipo_vinculo || "Sem vínculo"}</p>
+        <div className="flex items-center gap-2 flex-wrap mt-1">
+          <p className="text-sm text-muted-foreground">Prontuário Mediúnico — {(pessoa as any).tipo_vinculo_umbanda || pessoa.tipo_vinculo || "Sem vínculo"}</p>
+          {correntesPessoa.map((cp: any) => (
+            <Badge key={cp.id} variant="secondary" className="text-xs">{cp.correntes?.nome}</Badge>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -204,10 +213,12 @@ const FichaCorrente = () => {
         <TabsList className="bg-muted border border-border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="ficha">Ficha de Corrente</TabsTrigger>
           <TabsTrigger value="cruzamentos">Cruzamentos</TabsTrigger>
+          <TabsTrigger value="cruzamentos_linhas">Cruzamentos (Linhas)</TabsTrigger>
           <TabsTrigger value="coroacoes">Coroações</TabsTrigger>
           <TabsTrigger value="entidades">Entidades</TabsTrigger>
           <TabsTrigger value="historico">Histórico</TabsTrigger>
         </TabsList>
+
 
         {/* Ficha de Corrente */}
         <TabsContent value="ficha">
@@ -282,6 +293,41 @@ const FichaCorrente = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </TabsContent>
+
+        {/* Cruzamentos (Linhas) — Grid complementar */}
+        <TabsContent value="cruzamentos_linhas">
+          <div className="bg-card rounded-xl border border-border p-6">
+            <p className="text-xs text-muted-foreground mb-4">Grid complementar de cruzamentos por linha espiritual. Um registro por pessoa/linha.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {LINHAS_ORDEM.map((linha, idx) => {
+                const existing = cruzLinhas.find((c: any) => c.linha === linha);
+                return (
+                  <div key={linha} className="text-center">
+                    <p className="text-xs font-semibold text-card-foreground mb-2">{linha}</p>
+                    <Input
+                      type="date"
+                      className="bg-muted border-border text-xs h-8"
+                      value={existing?.data_cruzamento || ""}
+                      onChange={async (e) => {
+                        if (!id) return;
+                        try {
+                          await upsertCruzLinha.mutateAsync({
+                            pessoa_id: id,
+                            linha,
+                            data_cruzamento: e.target.value || null,
+                            ordem: idx,
+                          });
+                        } catch (err: any) {
+                          toast({ title: "Erro", description: err.message, variant: "destructive" });
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 

@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenda_corrente: {
+        Row: {
+          corrente_id: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+        }
+        Insert: {
+          corrente_id: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+        }
+        Update: {
+          corrente_id?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_corrente_corrente_id_fkey"
+            columns: ["corrente_id"]
+            isOneToOne: false
+            referencedRelation: "correntes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       arquivos_acervo: {
         Row: {
           created_at: string
@@ -367,6 +399,27 @@ export type Database = {
           },
         ]
       }
+      correntes: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
       cruzamentos: {
         Row: {
           created_at: string
@@ -401,6 +454,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "cruzamentos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cruzamentos_linha: {
+        Row: {
+          created_at: string
+          data_cruzamento: string | null
+          id: string
+          linha: string
+          ordem: number | null
+          pessoa_id: string
+        }
+        Insert: {
+          created_at?: string
+          data_cruzamento?: string | null
+          id?: string
+          linha: string
+          ordem?: number | null
+          pessoa_id: string
+        }
+        Update: {
+          created_at?: string
+          data_cruzamento?: string | null
+          id?: string
+          linha?: string
+          ordem?: number | null
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cruzamentos_linha_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: false
             referencedRelation: "pessoas"
@@ -639,6 +727,48 @@ export type Database = {
             foreignKeyName: "ficha_corrente_pessoa_id_fkey"
             columns: ["pessoa_id"]
             isOneToOne: true
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      frequencia_mediuns: {
+        Row: {
+          corrente_id: string
+          created_at: string
+          data: string
+          id: string
+          pessoa_id: string
+          presente: boolean
+        }
+        Insert: {
+          corrente_id: string
+          created_at?: string
+          data: string
+          id?: string
+          pessoa_id: string
+          presente?: boolean
+        }
+        Update: {
+          corrente_id?: string
+          created_at?: string
+          data?: string
+          id?: string
+          pessoa_id?: string
+          presente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "frequencia_mediuns_corrente_id_fkey"
+            columns: ["corrente_id"]
+            isOneToOne: false
+            referencedRelation: "correntes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "frequencia_mediuns_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
             referencedRelation: "pessoas"
             referencedColumns: ["id"]
           },
@@ -1081,6 +1211,42 @@ export type Database = {
           },
         ]
       }
+      pai_mae_correntes: {
+        Row: {
+          corrente_id: string
+          created_at: string
+          id: string
+          usuario_id: string
+        }
+        Insert: {
+          corrente_id: string
+          created_at?: string
+          id?: string
+          usuario_id: string
+        }
+        Update: {
+          corrente_id?: string
+          created_at?: string
+          id?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pai_mae_correntes_corrente_id_fkey"
+            columns: ["corrente_id"]
+            isOneToOne: false
+            referencedRelation: "correntes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pai_mae_correntes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfis: {
         Row: {
           created_at: string
@@ -1231,6 +1397,42 @@ export type Database = {
           tipo_vinculo_umbanda?: string | null
         }
         Relationships: []
+      }
+      pessoas_correntes: {
+        Row: {
+          corrente_id: string
+          created_at: string
+          id: string
+          pessoa_id: string
+        }
+        Insert: {
+          corrente_id: string
+          created_at?: string
+          id?: string
+          pessoa_id: string
+        }
+        Update: {
+          corrente_id?: string
+          created_at?: string
+          id?: string
+          pessoa_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_correntes_corrente_id_fkey"
+            columns: ["corrente_id"]
+            isOneToOne: false
+            referencedRelation: "correntes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoas_correntes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       registros_acervo: {
         Row: {
