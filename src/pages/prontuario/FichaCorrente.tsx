@@ -177,7 +177,12 @@ const FichaCorrente = () => {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-card-foreground">{pessoa.nome}</h1>
-        <p className="text-sm text-muted-foreground">Prontuário Mediúnico — {(pessoa as any).tipo_vinculo_umbanda || pessoa.tipo_vinculo || "Sem vínculo"}</p>
+        <div className="flex items-center gap-2 flex-wrap mt-1">
+          <p className="text-sm text-muted-foreground">Prontuário Mediúnico — {(pessoa as any).tipo_vinculo_umbanda || pessoa.tipo_vinculo || "Sem vínculo"}</p>
+          {correntesPessoa.map((cp: any) => (
+            <Badge key={cp.id} variant="secondary" className="text-xs">{cp.correntes?.nome}</Badge>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -208,10 +213,12 @@ const FichaCorrente = () => {
         <TabsList className="bg-muted border border-border flex-wrap h-auto gap-1 p-1">
           <TabsTrigger value="ficha">Ficha de Corrente</TabsTrigger>
           <TabsTrigger value="cruzamentos">Cruzamentos</TabsTrigger>
+          <TabsTrigger value="cruzamentos_linhas">Cruzamentos (Linhas)</TabsTrigger>
           <TabsTrigger value="coroacoes">Coroações</TabsTrigger>
           <TabsTrigger value="entidades">Entidades</TabsTrigger>
           <TabsTrigger value="historico">Histórico</TabsTrigger>
         </TabsList>
+
 
         {/* Ficha de Corrente */}
         <TabsContent value="ficha">
