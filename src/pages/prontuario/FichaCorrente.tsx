@@ -296,6 +296,41 @@ const FichaCorrente = () => {
           </div>
         </TabsContent>
 
+        {/* Cruzamentos (Linhas) — Grid complementar */}
+        <TabsContent value="cruzamentos_linhas">
+          <div className="bg-card rounded-xl border border-border p-6">
+            <p className="text-xs text-muted-foreground mb-4">Grid complementar de cruzamentos por linha espiritual. Um registro por pessoa/linha.</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {LINHAS_ORDEM.map((linha, idx) => {
+                const existing = cruzLinhas.find((c: any) => c.linha === linha);
+                return (
+                  <div key={linha} className="text-center">
+                    <p className="text-xs font-semibold text-card-foreground mb-2">{linha}</p>
+                    <Input
+                      type="date"
+                      className="bg-muted border-border text-xs h-8"
+                      value={existing?.data_cruzamento || ""}
+                      onChange={async (e) => {
+                        if (!id) return;
+                        try {
+                          await upsertCruzLinha.mutateAsync({
+                            pessoa_id: id,
+                            linha,
+                            data_cruzamento: e.target.value || null,
+                            ordem: idx,
+                          });
+                        } catch (err: any) {
+                          toast({ title: "Erro", description: err.message, variant: "destructive" });
+                        }
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+
         {/* Coroações */}
         <TabsContent value="coroacoes">
           <div className="bg-card rounded-xl border border-border p-6">
