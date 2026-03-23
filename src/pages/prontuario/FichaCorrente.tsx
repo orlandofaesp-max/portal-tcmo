@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { usePessoa } from "@/hooks/useSecretaria";
 import {
@@ -16,6 +17,7 @@ import {
   useHistoricoReligioso, useCreateHistoricoReligioso, useDeleteHistoricoReligioso,
   useFichaCorrente, useUpsertFichaCorrente,
 } from "@/hooks/useProntuario";
+import { useCruzamentosLinha, useUpsertCruzamentoLinha, LINHAS_ORDEM, useCorrentesDaPessoa } from "@/hooks/useCorrente";
 import { useState } from "react";
 import { format, differenceInYears, differenceInMonths } from "date-fns";
 
