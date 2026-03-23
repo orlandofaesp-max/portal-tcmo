@@ -52,7 +52,11 @@ const modules = [
     icon: Heart,
     items: [
       { to: "/prontuario/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+      { to: "/prontuario/dashboard-corrente", icon: Layers, label: "Dashboard Corrente" },
       { to: "/prontuario/mediuns", icon: Users, label: "Médiuns" },
+      { to: "/prontuario/correntes", icon: GitBranch, label: "Correntes" },
+      { to: "/prontuario/agenda", icon: CalendarDays, label: "Agenda" },
+      { to: "/prontuario/frequencia", icon: CheckCircle, label: "Frequência" },
       { to: "/prontuario/ocorrencias", icon: ClipboardList, label: "Ocorrências" },
       { to: "/prontuario/arvore", icon: GitBranch, label: "Árvore Espiritual" },
       { to: "/prontuario/mapa", icon: Map, label: "Mapa Espiritual" },
