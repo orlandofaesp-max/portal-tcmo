@@ -258,10 +258,10 @@ const LivroCaixa = () => {
             </div>
             <div>
               <Label className="text-muted-foreground">Associado (opcional)</Label>
-              <Select value={form.associado_id} onValueChange={(v) => setForm((p) => ({ ...p, associado_id: v }))}>
+              <Select value={form.associado_id || "__none__"} onValueChange={(v) => setForm((p) => ({ ...p, associado_id: v === "__none__" ? "" : v }))}>
                 <SelectTrigger className="bg-muted border-border mt-1"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum</SelectItem>
+                  <SelectItem value="__none__">Nenhum</SelectItem>
                   {associados.filter(a => a.ativo).map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>
                   ))}
