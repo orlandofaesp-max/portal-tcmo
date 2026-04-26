@@ -248,10 +248,10 @@ const Mensalidades = () => {
             </div>
             <div>
               <Label className="text-muted-foreground">Associado (deixe vazio para todos)</Label>
-              <Select value={gerarForm.associado_id} onValueChange={(v) => setGerarForm((p) => ({ ...p, associado_id: v }))}>
+              <Select value={gerarForm.associado_id || "__all__"} onValueChange={(v) => setGerarForm((p) => ({ ...p, associado_id: v === "__all__" ? "" : v }))}>
                 <SelectTrigger className="bg-muted border-border mt-1"><SelectValue placeholder="Todos os ativos" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos os ativos</SelectItem>
+                  <SelectItem value="__all__">Todos os ativos</SelectItem>
                   {associados.filter((a) => a.ativo).map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.nome}</SelectItem>
                   ))}
